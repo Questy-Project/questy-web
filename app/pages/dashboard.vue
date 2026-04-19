@@ -22,28 +22,29 @@ const xpPercent = computed(() => {
 const authStore = useAuthStore();
 const pseudo = computed(() => authStore.user?.pseudo ?? "");
 
-onMounted(() => {
-  Promise.all([avatarStore.fetchAvatar(), partsStore.fetchParts()]);
+onMounted(async () => {
+  if (!authStore.user) await authStore.fetchUser();
+  await Promise.all([avatarStore.fetchAvatar(), partsStore.fetchParts()]);
 });
 </script>
 
 <template>
-  <div class="min-h-screen bg-questy-dark text-questy-light pb-20">
+  <div class="min-h-screen bg-questy-dark text-questy-light pb-20 flex flex-col justify-center">
     <!-- chargement -->
-    <div v-if="loading" class="flex items-center justify-center h-screen">
+    <div v-if="loading" class="flex items-center justify-center flex-1">
       <span class="text-questy-violet animate-pulse">Chargement...</span>
     </div>
 
     <!-- erreur -->
     <div
       v-else-if="error"
-      class="flex items-center justify-center h-screen px-6"
+      class="flex items-center justify-center flex-1 px-6"
     >
       <p class="text-red-400 text-center">{{ error }}</p>
     </div>
 
     <!-- dashboard -->
-    <div v-else-if="avatar" class="max-w-lg mx-auto px-4 pt-6 space-y-4">
+    <div v-else-if="avatar" class="max-w-lg mx-auto px-4 space-y-4 w-full">
       <!-- header : pseudo + cœurs -->
       <div class="flex items-center justify-between">
         <span class="text-lg font-bold text-questy-light">{{ pseudo }}</span>
@@ -52,7 +53,7 @@ onMounted(() => {
 
       <!-- classe + niveau + barre XP -->
       <div class="flex items-center gap-3">
-        <HeroClass :hero-class="avatar.heroClass" />
+        <AvatarHeroClass :hero-class="avatar.heroClass" />
         <span class="text-xs text-questy-light/60"
           >Niv. {{ avatar.level }}</span
         >
@@ -69,17 +70,17 @@ onMounted(() => {
       <div class="grid grid-cols-3 gap-3 items-center">
         <!-- stats gauche -->
         <div class="space-y-3">
-          <StatBar
+          <AvatarStatBar
             label="Force"
             :value="avatar.strength"
             :max-value="maxStat"
           />
-          <StatBar
+          <AvatarStatBar
             label="Agilité"
             :value="avatar.agility"
             :max-value="maxStat"
           />
-          <StatBar
+          <AvatarStatBar
             label="Endurance"
             :value="avatar.endurance"
             :max-value="maxStat"
@@ -88,24 +89,24 @@ onMounted(() => {
 
         <!-- avatar centré -->
         <div class="flex justify-center">
-          <Avatar2D :hero-class="avatar.heroClass" />
+          <AvatarAvatar2D :hero-class="avatar.heroClass" />
         </div>
 
         <!-- stats droite -->
         <div class="space-y-3">
-          <StatBar
+          <AvatarStatBar
             label="Intel."
             :value="avatar.intelligence"
             :max-value="maxStat"
             align="right"
           />
-          <StatBar
+          <AvatarStatBar
             label="Esprit"
             :value="avatar.spirit"
             :max-value="maxStat"
             align="right"
           />
-          <StatBar
+          <AvatarStatBar
             label="Vitalité"
             :value="avatar.vitality"
             :max-value="maxStat"
@@ -131,6 +132,6 @@ onMounted(() => {
       </div>
     </div>
 
-    <BottomNav />
+    <UiBottomNav />
   </div>
 </template>
