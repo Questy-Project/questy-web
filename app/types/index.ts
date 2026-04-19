@@ -26,7 +26,7 @@ export interface Avatar{
 }
 
 export interface AvatarResponse extends Avatar{
-    npNextLevel: number;
+    xpNextLevel: number;
 }
 
 export interface Parts{
