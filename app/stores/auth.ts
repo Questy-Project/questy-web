@@ -26,6 +26,10 @@ export const useAuthStore = defineStore("auth", () => {
     user.value = await useApi<User>('/users/me');
     }
 
+    async function fetchUser() {
+        user.value = await useApi<User>('/users/me');
+    }
+
     function logout(){
         token.value = null;
         user.value= null;
@@ -36,6 +40,7 @@ export const useAuthStore = defineStore("auth", () => {
         isAuthenticated,
         login,
         register,
-        logout
+        logout,
+        fetchUser,
     }
 });
