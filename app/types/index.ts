@@ -32,3 +32,21 @@ export interface AvatarResponse extends Avatar{
 export interface Parts{
     stock: number;
 }
+
+export interface Activity {
+  id: string;
+  name: string;
+  category: string;
+  statPrimary: string;
+  statSecondary: string | null;
+  xpMultiplier: number;
+}
+
+export interface ActivityLog {
+  id: string;
+  duration: number;
+  intensity: number;
+  xpGained: number;
+  partsUnlocked: number;
+  loggedAt: string;
+}
