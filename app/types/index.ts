@@ -11,3 +11,24 @@ export interface User {
 export interface AuthResponse{
     access_token: string;
 }
+
+export interface Avatar{
+    id: string;
+    level: number;
+    xp: number;
+    heroClass: string;
+    strength: number
+    agility: number
+    endurance: number
+    intelligence: number
+    spirit: number
+    vitality: number
+}
+
+export interface AvatarResponse extends Avatar{
+    xpNextLevel: number;
+}
+
+export interface Parts{
+    stock: number;
+}
