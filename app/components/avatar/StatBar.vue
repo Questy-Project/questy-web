@@ -4,6 +4,7 @@ const props = defineProps<{
   value: number;
   maxValue: number;
   align?: "left" | "right";
+  description?: string;
 }>();
 
 const width = computed(() =>
@@ -31,5 +32,8 @@ const isRight = computed(() => props.align === "right");
         :style="{ width: `${width}%` }"
       />
     </div>
+    <p v-if="description" class="text-xs text-questy-light/40 mt-0.5">
+      {{ description }}
+    </p>
   </div>
 </template>
