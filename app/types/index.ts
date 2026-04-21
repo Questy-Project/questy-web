@@ -44,6 +44,10 @@ export interface Activity {
 
 export interface ActivityLog {
   id: string;
+  activityId:string|null;
+  activity:{name: string; category:string} | null;
+  customName: string;
+  customCategory: string;
   duration: number;
   intensity: number;
   xpGained: number;
