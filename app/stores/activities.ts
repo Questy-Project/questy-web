@@ -81,6 +81,16 @@ export const useActivitiesStore = defineStore('activities', () => {
     lastLog.value = null;
   }
 
+  const recentLogs = ref<ActivityLog[]>([]);
+
+  async function fetchRecentLogs() {
+    try {
+      recentLogs.value = await useApi<ActivityLog[]>('/activities/log');
+    } catch {
+      recentLogs.value = [];
+    }
+  }
+
   return {
     activities,
     selectedActivity,
@@ -92,11 +102,13 @@ export const useActivitiesStore = defineStore('activities', () => {
     error,
     success,
     lastLog,
+    recentLogs,
     xpPreview,
     partsPreview,
     canSubmit,
     fetchActivities,
     logActivity,
     reset,
+    fetchRecentLogs,
   };
 });
