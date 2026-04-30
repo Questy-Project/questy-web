@@ -10,9 +10,9 @@ export const useApi = <T>(
   return $fetch<T>(`${config.public.apiUrl}${endpoint}`, {
     ...options,
     headers: {
-      ...options?.headers,
-      // Injecte Authorization uniquement si le cookie token existe
+      // Injecte Authorization depuis le cookie, sauf si l'appelant passe un header explicite
       ...(token.value ? { Authorization: `Bearer ${token.value}` } : {}),
+      ...options?.headers,
     },
   });
 };
