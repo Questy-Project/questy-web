@@ -30,8 +30,13 @@ async function submit() {
       await authStore.register(form.pseudo, form.email, form.password);
     }
     navigateTo("/dashboard");
-  } catch {
-    error.value = "Une erreur est survenue. Vérifie tes identifiants.";
+  } catch (err: unknown) {
+    const status = (err as { status?: number })?.status;
+    if (mode.value === 'register' && status === 409) {
+      error.value = "Cet email est déjà utilisé.";
+    } else {
+      error.value = "Email ou mot de passe incorrect.";
+    }
   }
 }
 </script>
