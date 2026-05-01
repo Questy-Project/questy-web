@@ -79,21 +79,21 @@ async function submit() {
           type="text"
           placeholder="Pseudo"
           required
-          class="input"
+          class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-questy-purple text-questy-dark"
         />
         <input
           v-model="form.email"
           type="email"
           placeholder="Email"
           required
-          class="input"
+          class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-questy-purple text-questy-dark"
         />
         <input
           v-model="form.password"
           type="password"
           placeholder="Mot de passe"
           required
-          class="input"
+          class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-questy-purple text-questy-dark"
         />
         <input
           v-if="mode === 'register'"
@@ -101,7 +101,7 @@ async function submit() {
           type="password"
           placeholder="Confirmer le mot de passe"
           required
-          class="input"
+          class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-questy-purple text-questy-dark"
         />
 
         <!-- Message d'erreur -->
@@ -117,9 +117,3 @@ async function submit() {
     </div>
   </div>
 </template>
-
-<style scoped>
-.input {
-  @apply w-full px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-questy-purple text-questy-dark;
-}
-</style>
