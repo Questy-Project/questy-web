@@ -83,8 +83,7 @@ function confirmCustom() {
     <div class="fixed inset-0 bg-black/75 z-40" @click="$emit('close')" />
 
     <!-- Sheet -->
-    <div class="fixed bottom-0 left-0 right-0 z-50 rounded-t-3xl max-h-[82vh] flex flex-col"
-         style="background: #211a6e; border-top: 1px solid rgba(127,119,221,0.25);">
+    <div class="fixed bottom-0 left-0 right-0 z-50 rounded-t-3xl max-h-[82vh] flex flex-col bg-questy-sheet border-t border-questy-violet/25">
 
       <!-- Handle -->
       <div class="flex justify-center pt-4 pb-2 flex-shrink-0">
@@ -93,8 +92,7 @@ function confirmCustom() {
 
       <!-- Recherche + filtres -->
       <div class="flex-shrink-0 px-4 pb-3 space-y-2">
-        <div class="flex items-center gap-2 rounded-2xl px-4 py-2.5 border border-questy-purple/40"
-             style="background: rgba(15,10,46,0.7);">
+        <div class="flex items-center gap-2 rounded-2xl px-4 py-2.5 border border-questy-purple/40 bg-questy-dark/70">
           <span class="text-questy-violet text-sm">🔍</span>
           <input
             v-model="search"
@@ -131,8 +129,7 @@ function confirmCustom() {
           <button
             v-for="activity in filtered"
             :key="activity.id"
-            class="w-full flex justify-between items-center py-3.5 border-b text-sm transition-colors"
-            style="border-color: rgba(83,74,183,0.15);"
+            class="w-full flex justify-between items-center py-3.5 border-b border-questy-purple/15 text-sm transition-colors"
             @click="selectActivity(activity)"
           >
             <span class="text-questy-light text-left">{{ activity.name }}</span>
@@ -147,7 +144,7 @@ function confirmCustom() {
       </div>
 
       <!-- Footer fixe : Autre activité -->
-      <div class="flex-shrink-0 px-4 py-3 border-t" style="border-color: rgba(83,74,183,0.2);">
+      <div class="flex-shrink-0 px-4 py-3 border-t border-questy-purple/20">
         <button
           v-if="!showCustom"
           class="w-full border border-dashed border-questy-purple/40 rounded-2xl py-3 text-sm text-questy-violet/80 transition-colors"
@@ -162,16 +159,14 @@ function confirmCustom() {
             v-model="localCustomName"
             type="text"
             placeholder="Nom de l'activité *"
-            class="w-full rounded-2xl px-4 py-2.5 text-sm text-questy-light placeholder-questy-violet/40 outline-none border border-questy-purple/30 focus:border-questy-purple"
-            style="background: rgba(15,10,46,0.7);"
+            class="w-full rounded-2xl px-4 py-2.5 text-sm text-questy-light placeholder-questy-violet/40 outline-none border border-questy-purple/30 focus:border-questy-purple bg-questy-dark/70"
             @input="customError = ''"
           />
           <input
             v-model="localCustomCategory"
             type="text"
             placeholder="Catégorie (optionnel)"
-            class="w-full rounded-2xl px-4 py-2.5 text-sm text-questy-light placeholder-questy-violet/40 outline-none border border-questy-purple/30 focus:border-questy-purple"
-            style="background: rgba(15,10,46,0.7);"
+            class="w-full rounded-2xl px-4 py-2.5 text-sm text-questy-light placeholder-questy-violet/40 outline-none border border-questy-purple/30 focus:border-questy-purple bg-questy-dark/70"
           />
           <div class="flex gap-2">
             <button
