@@ -124,8 +124,9 @@ onMounted(async () => {
           + Activité
         </button>
         <button
-          class="bg-questy-purple text-white font-semibold py-3 rounded-xl text-sm"
-          @click="navigateTo('/mini-games')"
+          disabled
+          title="Bientôt disponible"
+          class="bg-questy-purple/40 text-white/40 font-semibold py-3 rounded-xl text-sm cursor-not-allowed"
         >
           Jouer
         </button>
