@@ -17,14 +17,7 @@ const avatar = computed(() => avatarStore.avatar);
 const maxStat = computed(() => avatarStore.maxStat);
 const user = computed(() => authStore.user);
 
-const xpPercent = computed(() => {
-  if (!avatar.value) return 0;
-  const { xp, xpNextLevel, level } = avatar.value;
-  const xpCurrentLevel = (((level - 1) * level) / 2) * 100;
-  const range = xpNextLevel - xpCurrentLevel;
-  if (range <= 0) return 100;
-  return Math.min(Math.round(((xp - xpCurrentLevel) / range) * 100), 100);
-});
+const xpPercent = computed(() => avatarStore.xpPercent);
 
 const stats = [
   { key: "strength" as const, label: "Force", description: "Attaque physique" },
@@ -67,11 +60,7 @@ async function saveEdit() {
   editLoading.value = true;
   editError.value = null;
   try {
-    await useApi("/users/me", {
-      method: "PATCH",
-      body: { pseudo: editPseudo.value, age: editAge.value },
-    });
-    await authStore.fetchUser();
+    await authStore.updateProfile(editPseudo.value, editAge.value);
     editMode.value = false;
   } catch (e: unknown) {
     const err = e as { data?: { message?: string } };

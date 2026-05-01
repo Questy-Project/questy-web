@@ -10,14 +10,7 @@ const error = computed(() => avatarStore.error || partsStore.error);
 const avatar = computed(() => avatarStore.avatar);
 const maxStat = computed(() => avatarStore.maxStat);
 
-const xpPercent = computed(() => {
-  if (!avatar.value) return 0;
-  const { xp, xpNextLevel, level } = avatar.value;
-  const xpCurrentLevel = (((level - 1) * level) / 2) * 100;
-  const range = xpNextLevel - xpCurrentLevel;
-  if (range <= 0) return 100;
-  return Math.min(Math.round(((xp - xpCurrentLevel) / range) * 100), 100);
-});
+const xpPercent = computed(() => avatarStore.xpPercent);
 
 const authStore = useAuthStore();
 const pseudo = computed(() => authStore.user?.pseudo ?? "");

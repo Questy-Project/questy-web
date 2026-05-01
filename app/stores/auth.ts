@@ -34,6 +34,11 @@ export const useAuthStore = defineStore("auth", () => {
         user.value = await useApi<User>('/users/me');
     }
 
+    async function updateProfile(pseudo: string, age: number | null) {
+        await useApi('/users/me', { method: 'PATCH', body: { pseudo, age } });
+        await fetchUser();
+    }
+
     function logout(){
         token.value = null;
         user.value= null;
@@ -46,5 +51,6 @@ export const useAuthStore = defineStore("auth", () => {
         register,
         logout,
         fetchUser,
+        updateProfile,
     }
 });
