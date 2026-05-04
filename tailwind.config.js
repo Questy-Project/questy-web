@@ -17,6 +17,7 @@ export default {
         'questy-light':  '#EEEDFE',
         'questy-violet': '#7F77DD',
         'questy-sheet':  '#211a6e',
+        'questy-gold':   '#f2ca50',
       },
     },
   },
