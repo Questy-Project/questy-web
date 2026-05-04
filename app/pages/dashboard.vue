@@ -12,7 +12,6 @@ const maxStat = computed(() => avatarStore.maxStat);
 const xpPercent = computed(() => avatarStore.xpPercent);
 
 const authStore = useAuthStore();
-const pseudo = computed(() => authStore.user?.pseudo ?? "");
 
 onMounted(async () => {
   if (!authStore.user) await authStore.fetchUser();
