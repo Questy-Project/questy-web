@@ -17,18 +17,14 @@ const isRight = computed(() => props.align === "right");
   <div>
     <div class="flex justify-between text-xs mb-1">
       <span v-if="!isRight" class="text-questy-light/80">{{ label }}</span>
-      <span
-        class="font-bold"
-        :class="isRight ? 'text-questy-violet' : 'text-questy-orange'"
-      >
+      <span class="font-bold text-questy-gold">
         {{ value.toLocaleString("fr-FR") }}
       </span>
       <span v-if="isRight" class="text-questy-light/80">{{ label }}</span>
     </div>
-    <div class="bg-[#1a1245] rounded-full h-1.5">
+    <div class="bg-questy-sheet rounded-full h-1.5">
       <div
-        class="h-full rounded-full transition-all duration-500"
-        :class="isRight ? 'bg-questy-purple' : 'bg-questy-orange'"
+        class="h-full rounded-full bg-questy-gold transition-all duration-500"
         :style="{ width: `${width}%` }"
       />
     </div>
