@@ -14,20 +14,29 @@ export const useAuthStore = defineStore("auth", () => {
       body: { email, password },
     });
     token.value = data.access_token;
-    user.value = await useApi<User>('/users/me');  
+    user.value = await useApi<User>('/users/me', {
+      headers: { Authorization: `Bearer ${data.access_token}` },
+    });
   }
 
-  async function register(pseudo: string, email: string, password: string){
+  async function register(pseudo: string, email: string, password: string) {
     const data = await useApi<AuthResponse>('/auth/register', {
-        method: 'POST',
-        body: {pseudo, email, password},
+      method: 'POST',
+      body: { pseudo, email, password },
     });
     token.value = data.access_token;
-    user.value = await useApi<User>('/users/me');
-    }
+    user.value = await useApi<User>('/users/me', {
+      headers: { Authorization: `Bearer ${data.access_token}` },
+    });
+  }
 
     async function fetchUser() {
         user.value = await useApi<User>('/users/me');
+    }
+
+    async function updateProfile(pseudo: string, age: number | null) {
+        await useApi('/users/me', { method: 'PATCH', body: { pseudo, age } });
+        await fetchUser();
     }
 
     function logout(){
@@ -42,5 +51,6 @@ export const useAuthStore = defineStore("auth", () => {
         register,
         logout,
         fetchUser,
+        updateProfile,
     }
 });
