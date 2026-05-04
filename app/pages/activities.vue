@@ -9,6 +9,12 @@ const partsStore = usePartsStore();
 
 const showSheet = ref(false);
 
+let timer: ReturnType<typeof setTimeout> | null = null;
+
+onUnmounted(() => {
+  if (timer) clearTimeout(timer);
+});
+
 const durations = [
   { label: '30min', value: 30 },
   { label: '1h', value: 60 },
@@ -41,7 +47,7 @@ async function submit() {
   await activitiesStore.logActivity();
   if (activitiesStore.success) {
     await Promise.all([avatarStore.fetchAvatar(), partsStore.fetchParts()]);
-    setTimeout(() => {
+    timer = setTimeout(() => {
       activitiesStore.reset();
       navigateTo('/dashboard');
     }, 2000);
@@ -51,19 +57,19 @@ async function submit() {
 
 <template>
   <div
-    class="min-h-screen bg-questy-dark text-questy-light pb-20"
-    style="font-family: 'Be Vietnam Pro', sans-serif"
+    class="min-h-screen bg-questy-dark text-questy-light pb-20 bg-cover bg-center bg-no-repeat flex flex-col"
+    style="font-family: 'Be Vietnam Pro', sans-serif; background-image: linear-gradient(rgba(0,0,0,0.50), rgba(0,0,0,0.50)), url('/images/bg-forest.jpg')"
   >
-    <div class="max-w-lg mx-auto px-4 w-full space-y-5 pt-6">
+    <div class="flex-1 flex flex-col justify-center max-w-xl mx-auto w-full px-4 sm:px-8 space-y-5 sm:space-y-6 py-6 sm:py-12">
       <!-- Header -->
       <header class="border-b border-questy-gold/20 pb-4">
         <h1
-          class="text-3xl font-bold italic text-questy-gold"
+          class="text-3xl sm:text-4xl font-bold italic text-questy-gold"
           style="font-family: 'Newsreader', serif"
         >
           Mes Activités
         </h1>
-        <p class="text-xs text-questy-light/50 uppercase tracking-widest mt-1">
+        <p class="text-xs sm:text-sm text-questy-light/50 uppercase tracking-widest mt-1">
           Déclare tes efforts, gagne de l'XP
         </p>
       </header>
@@ -71,7 +77,7 @@ async function submit() {
       <!-- Succès -->
       <div
         v-if="activitiesStore.success"
-        class="relative bg-questy-sheet/60 border border-questy-gold/40 backdrop-blur-sm p-5 text-center"
+        class="relative bg-questy-sheet/90 border border-questy-gold/40 p-5 text-center"
       >
         <span class="absolute top-[-3px] left-[-3px] w-5 h-5 border-t-2 border-l-2 border-questy-gold" />
         <span class="absolute top-[-3px] right-[-3px] w-5 h-5 border-t-2 border-r-2 border-questy-gold" />
@@ -81,7 +87,7 @@ async function submit() {
           Activité enregistrée !
         </p>
         <p class="text-questy-light/70 text-sm mt-1">
-          +{{ activitiesStore.lastLog?.xpGained }} XP · +{{ activitiesStore.lastLog?.partsUnlocked }} ❤️
+          +{{ activitiesStore.lastLog?.xpGained }} XP · +{{ activitiesStore.lastLog?.partsUnlocked }} <span class="material-symbols-outlined text-sm" style="font-variation-settings:'FILL' 1; color: #f2ca50">favorite</span>
         </p>
         <p class="text-questy-light/40 text-xs mt-2">Retour au dashboard...</p>
       </div>
@@ -91,7 +97,7 @@ async function submit() {
         <div class="space-y-2">
           <p class="text-xs text-questy-gold/70 uppercase tracking-widest font-bold">Activité</p>
           <button
-            class="w-full flex justify-between items-center bg-questy-sheet/60 border border-questy-gold/40 px-4 py-3 text-sm"
+            class="w-full flex justify-between items-center bg-questy-sheet/90 border border-questy-gold/40 px-4 py-3 text-sm"
             @click="showSheet = true"
           >
             <span :class="selectedLabel ? 'text-questy-light' : 'text-questy-light/40'">
@@ -111,7 +117,7 @@ async function submit() {
               class="py-2 text-sm font-medium border transition-colors"
               :class="activitiesStore.duration === d.value
                 ? 'bg-questy-gold/20 border-questy-gold text-questy-gold'
-                : 'bg-questy-sheet/60 border-questy-gold/20 text-questy-light/60'"
+                : 'bg-questy-sheet/90 border-questy-gold/20 text-questy-light/60'"
               @click="activitiesStore.duration = d.value"
             >
               {{ d.label }}
@@ -129,7 +135,7 @@ async function submit() {
               class="py-3 border transition-colors text-center"
               :class="activitiesStore.intensity === i.value
                 ? 'bg-questy-gold/20 border-questy-gold'
-                : 'bg-questy-sheet/60 border-questy-gold/20'"
+                : 'bg-questy-sheet/90 border-questy-gold/20'"
               @click="activitiesStore.intensity = i.value"
             >
               <span class="material-symbols-outlined text-questy-gold text-xl block">{{ i.icon }}</span>
@@ -142,7 +148,7 @@ async function submit() {
         <!-- Aperçu gains -->
         <div
           v-if="activitiesStore.duration && activitiesStore.intensity"
-          class="relative bg-questy-sheet/60 border border-questy-gold/40 backdrop-blur-sm px-4 py-3"
+          class="relative bg-questy-sheet/90 border border-questy-gold/40 px-4 py-3"
         >
           <span class="absolute top-[-3px] left-[-3px] w-5 h-5 border-t-2 border-l-2 border-questy-gold" />
           <span class="absolute top-[-3px] right-[-3px] w-5 h-5 border-t-2 border-r-2 border-questy-gold" />
@@ -154,7 +160,7 @@ async function submit() {
           </p>
           <div class="flex justify-between text-sm">
             <span class="text-questy-gold font-bold">+{{ activitiesStore.xpPreview }} XP</span>
-            <span class="text-questy-light/60">+{{ activitiesStore.partsPreview }} ❤️</span>
+            <span class="text-questy-light/60">+{{ activitiesStore.partsPreview }} <span class="material-symbols-outlined text-sm" style="font-variation-settings:'FILL' 1; color: #f2ca50">favorite</span></span>
           </div>
         </div>
 
@@ -172,9 +178,13 @@ async function submit() {
         >
           <div class="absolute inset-0 bg-gradient-to-b from-questy-gold to-[#d4af37]" />
           <div class="relative px-6 py-4 flex items-center justify-center gap-2 border-b-4 border-[#554300]/40">
-            <span class="font-bold text-[#3c2f00] uppercase tracking-widest text-sm">
-              {{ activitiesStore.loading ? 'Enregistrement...' : '⚔ Valider l\'activité' }}
-            </span>
+            <template v-if="activitiesStore.loading">
+              <span class="font-bold text-[#3c2f00] uppercase tracking-widest text-sm">Enregistrement...</span>
+            </template>
+            <template v-else>
+              <span class="material-symbols-outlined text-sm text-[#3c2f00]">swords</span>
+              <span class="font-bold text-[#3c2f00] uppercase tracking-widest text-sm">Valider l'activité</span>
+            </template>
           </div>
         </button>
       </template>
