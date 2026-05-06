@@ -60,7 +60,7 @@ function switchMode(newMode: "login" | "register") {
       <div class="relative w-1/2 h-full border-r border-questy-gold/20">
         <img
           class="absolute inset-0 w-full h-full object-cover grayscale opacity-40"
-          src="/img/bg-athlete.jpg"
+          src="/images/bg-athlete.jpg"
           alt=""
         />
         <div class="absolute inset-0 bg-gradient-to-t from-[#131313] via-transparent to-transparent" />
@@ -69,7 +69,7 @@ function switchMode(newMode: "login" | "register") {
       <div class="relative w-1/2 h-full">
         <img
           class="absolute inset-0 w-full h-full object-cover"
-          src="/img/bg-paladin.jpg"
+          src="/images/bg-paladin.jpg"
           alt=""
         />
         <div class="absolute inset-0 bg-gradient-to-t from-[#131313] via-transparent to-transparent" />
