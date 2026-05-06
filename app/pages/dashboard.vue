@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { STAT_COLOR_MAP } from "~/constants/heroClasses";
+
 definePageMeta({ middleware: "auth" });
 
 const avatarStore = useAvatarStore();
@@ -80,9 +82,9 @@ onMounted(async () => {
         <div class="grid grid-cols-3 gap-4 sm:gap-6 items-center">
           <!-- Stats gauche -->
           <div class="space-y-4 sm:space-y-5">
-            <AvatarStatBar large label="Force" :value="avatar.strength" :max-value="maxStat" color="#8B0000" />
-            <AvatarStatBar large label="Agilité" :value="avatar.agility" :max-value="maxStat" color="#EAB308" />
-            <AvatarStatBar large label="Endurance" :value="avatar.endurance" :max-value="maxStat" color="#92400E" />
+            <AvatarStatBar large label="Force" :value="avatar.strength" :max-value="maxStat" :color="STAT_COLOR_MAP.strength" />
+            <AvatarStatBar large label="Agilité" :value="avatar.agility" :max-value="maxStat" :color="STAT_COLOR_MAP.agility" />
+            <AvatarStatBar large label="Endurance" :value="avatar.endurance" :max-value="maxStat" :color="STAT_COLOR_MAP.endurance" />
           </div>
 
           <!-- Portrait avatar encadré -->
@@ -99,9 +101,9 @@ onMounted(async () => {
 
           <!-- Stats droite -->
           <div class="space-y-4 sm:space-y-5">
-            <AvatarStatBar large label="Intel." :value="avatar.intelligence" :max-value="maxStat" align="right" color="#60A5FA" />
-            <AvatarStatBar large label="Esprit" :value="avatar.spirit" :max-value="maxStat" align="right" color="#F1F5F9" />
-            <AvatarStatBar large label="Vitalité" :value="avatar.vitality" :max-value="maxStat" align="right" color="#F472B6" />
+            <AvatarStatBar large label="Intel." :value="avatar.intelligence" :max-value="maxStat" align="right" :color="STAT_COLOR_MAP.intelligence" />
+            <AvatarStatBar large label="Esprit" :value="avatar.spirit" :max-value="maxStat" align="right" :color="STAT_COLOR_MAP.spirit" />
+            <AvatarStatBar large label="Vitalité" :value="avatar.vitality" :max-value="maxStat" align="right" :color="STAT_COLOR_MAP.vitality" />
           </div>
         </div>
         </div>

@@ -1,6 +1,9 @@
 <script setup lang="ts">
-defineProps<{ heroClass: string }>();
-const color = '#f2ca50';
+import { HERO_CLASS_COLOR_MAP } from "~/constants/heroClasses";
+
+const props = defineProps<{ heroClass: string }>();
+
+const color = computed(() => HERO_CLASS_COLOR_MAP[props.heroClass] ?? "#f2ca50");
 </script>
 
 <template>

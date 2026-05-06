@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { ActivityLog } from "~/types";
+import { STAT_COLOR_MAP } from "~/constants/heroClasses";
 
 definePageMeta({ middleware: "auth" });
 
@@ -19,12 +20,12 @@ const user = computed(() => authStore.user);
 const xpPercent = computed(() => avatarStore.xpPercent);
 
 const stats = [
-  { key: "strength" as const, label: "Force", description: "Attaque physique", color: "#8B0000" },
-  { key: "agility" as const, label: "Agilité", description: "Esquive & vitesse", color: "#EAB308" },
-  { key: "endurance" as const, label: "Endurance", description: "Résistance aux dégâts", color: "#92400E" },
-  { key: "intelligence" as const, label: "Intelligence", description: "Puissance magique", color: "#60A5FA" },
-  { key: "spirit" as const, label: "Esprit", description: "Soins & soutien", color: "#F1F5F9" },
-  { key: "vitality" as const, label: "Vitalité", description: "Points de vie max", color: "#F472B6" },
+  { key: "strength" as const, label: "Force", description: "Attaque physique", color: STAT_COLOR_MAP.strength },
+  { key: "agility" as const, label: "Agilité", description: "Esquive & vitesse", color: STAT_COLOR_MAP.agility },
+  { key: "endurance" as const, label: "Endurance", description: "Résistance aux dégâts", color: STAT_COLOR_MAP.endurance },
+  { key: "intelligence" as const, label: "Intelligence", description: "Puissance magique", color: STAT_COLOR_MAP.intelligence },
+  { key: "spirit" as const, label: "Esprit", description: "Soins & soutien", color: STAT_COLOR_MAP.spirit },
+  { key: "vitality" as const, label: "Vitalité", description: "Points de vie max", color: STAT_COLOR_MAP.vitality },
 ];
 
 function startEdit() {
