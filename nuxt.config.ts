@@ -1,4 +1,5 @@
 export default defineNuxtConfig({
+  compatibilityDate: '2026-04-13',
   devtools: { enabled: true },
 
   ssr: false, // Mode SPA — toutes les pages sont protégées par auth
