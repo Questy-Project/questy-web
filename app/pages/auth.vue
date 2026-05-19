@@ -1,10 +1,13 @@
 <script setup lang="ts">
+import type { AvatarCustomization } from '~/types';
+
 const token = useCookie("token");
 if (token.value) navigateTo("/dashboard");
 
 const authStore = useAuthStore();
 
 const mode = ref<"login" | "register">("login");
+const step = ref<1 | 2>(1);
 const error = ref<string | null>(null);
 
 const form = reactive({
@@ -14,33 +17,52 @@ const form = reactive({
   passwordConfirm: "",
 });
 
+const pendingCustomization = ref<AvatarCustomization>({
+  silhouette: 'A',
+  skinTone: 1,
+  hairStyle: 1,
+  hairColor: 1,
+});
+
+const previewHeroClass = 'Aventurier';
+
 async function submit() {
   error.value = null;
 
-  if (mode.value === "register" && form.password !== form.passwordConfirm) {
-    error.value = "Les mots de passe ne correspondent pas.";
+  if (mode.value === "login") {
+    try {
+      await authStore.login(form.email, form.password);
+      navigateTo("/dashboard");
+    } catch {
+      error.value = "Email ou mot de passe incorrect.";
+    }
     return;
   }
 
-  try {
-    if (mode.value === "login") {
-      await authStore.login(form.email, form.password);
-    } else {
-      await authStore.register(form.pseudo, form.email, form.password);
+  // Inscription étape 1 : validation formulaire
+  if (step.value === 1) {
+    if (form.password !== form.passwordConfirm) {
+      error.value = "Les mots de passe ne correspondent pas.";
+      return;
     }
+    step.value = 2;
+    return;
+  }
+
+  // Inscription étape 2 : envoi avec customisation
+  try {
+    await authStore.register(form.pseudo, form.email, form.password, pendingCustomization.value);
     navigateTo("/dashboard");
   } catch (err: unknown) {
     const status = (err as { status?: number })?.status;
-    if (mode.value === "register" && status === 409) {
-      error.value = "Cet email est déjà utilisé.";
-    } else {
-      error.value = "Email ou mot de passe incorrect.";
-    }
+    step.value = 1;
+    error.value = status === 409 ? "Cet email est déjà utilisé." : "Une erreur est survenue.";
   }
 }
 
 function switchMode(newMode: "login" | "register") {
   mode.value = newMode;
+  step.value = 1;
   error.value = null;
   form.pseudo = "";
   form.email = "";
@@ -118,8 +140,27 @@ function switchMode(newMode: "login" | "register") {
             <div class="h-0.5 w-24 bg-questy-gold mx-auto rounded-full shadow-[0_0_8px_rgba(242,202,80,0.6)]" />
           </div>
 
+          <!-- Indicateur d'étapes (inscription uniquement) -->
+          <div v-if="mode === 'register'" class="flex items-center gap-2">
+            <div class="flex items-center gap-1">
+              <div
+                class="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold"
+                :class="step === 1 ? 'bg-questy-gold text-black' : 'bg-questy-gold/30 text-questy-gold'"
+              >1</div>
+              <span class="text-xs text-questy-light/50">Compte</span>
+            </div>
+            <div class="flex-1 h-px bg-questy-gold/20" />
+            <div class="flex items-center gap-1">
+              <div
+                class="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold"
+                :class="step === 2 ? 'bg-questy-gold text-black' : 'bg-questy-gold/30 text-questy-gold'"
+              >2</div>
+              <span class="text-xs text-questy-light/50">Avatar</span>
+            </div>
+          </div>
+
           <!-- Formulaire -->
-          <form class="space-y-4" @submit.prevent="submit">
+          <form v-show="mode === 'login' || step === 1" class="space-y-4" @submit.prevent="submit">
             <!-- Pseudo (inscription uniquement) -->
             <div v-if="mode === 'register'" class="space-y-1.5">
               <label class="font-bold text-sm text-[#d4af37] flex items-center gap-2">
@@ -196,6 +237,30 @@ function switchMode(newMode: "login" | "register") {
               </div>
             </button>
           </form>
+
+          <!-- Étape 2 : customisation avatar -->
+          <div v-if="mode === 'register' && step === 2">
+            <AvatarCustomizer
+              :hero-class="previewHeroClass"
+              @update="(c) => pendingCustomization = c"
+            />
+            <div class="flex gap-2 mt-6">
+              <button
+                type="button"
+                class="flex-1 py-3 border border-questy-gold/30 text-questy-light/50 text-sm uppercase tracking-widest"
+                @click="step = 1; error = null"
+              >
+                Retour
+              </button>
+              <button
+                type="button"
+                class="flex-1 py-3 bg-questy-gold text-black font-bold text-sm uppercase tracking-widest"
+                @click="submit"
+              >
+                Commencer
+              </button>
+            </div>
+          </div>
 
           <!-- Lien de bascule connexion / inscription -->
           <div class="text-center text-sm">

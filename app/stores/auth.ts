@@ -19,10 +19,15 @@ export const useAuthStore = defineStore("auth", () => {
     });
   }
 
-  async function register(pseudo: string, email: string, password: string) {
+  async function register(
+    pseudo: string,
+    email: string,
+    password: string,
+    customization?: { silhouette?: string; skinTone?: number; hairStyle?: number; hairColor?: number },
+  ) {
     const data = await useApi<AuthResponse>('/auth/register', {
       method: 'POST',
-      body: { pseudo, email, password },
+      body: { pseudo, email, password, ...customization },
     });
     token.value = data.access_token;
     user.value = await useApi<User>('/users/me', {
