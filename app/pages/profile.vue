@@ -7,6 +7,7 @@ const avatarStore = useAvatarStore();
 const authStore = useAuthStore();
 const activitiesStore = useActivitiesStore();
 
+const logsError = ref<string | null>(null);
 const editMode = ref(false);
 const editPseudo = ref("");
 const editAge = ref<number | null>(null);
@@ -92,7 +93,11 @@ function logRelativeDate(dateStr: string): string {
 onMounted(async () => {
   if (!authStore.user) await authStore.fetchUser();
   if (!avatarStore.avatar) await avatarStore.fetchAvatar();
-  await activitiesStore.fetchRecentLogs();
+  try {
+    await activitiesStore.fetchRecentLogs();
+  } catch {
+    logsError.value = "Impossible de charger l'historique. Veuillez réessayer.";
+  }
 });
 </script>
 
@@ -143,8 +148,11 @@ onMounted(async () => {
         >
           Dernières activités
         </h2>
+        <p v-if="logsError" class="text-sm text-red-400 text-center py-4">
+          {{ logsError }}
+        </p>
         <p
-          v-if="activitiesStore.recentLogs.length === 0"
+          v-else-if="activitiesStore.recentLogs.length === 0"
           class="text-sm text-questy-light/40 text-center py-4"
         >
           Aucune activité déclarée pour le moment.
