@@ -16,7 +16,14 @@ const hairStyle = ref(props.initial?.hairStyle ?? 1);
 const hairColor = ref(props.initial?.hairColor ?? 1);
 
 const SKIN_COLORS = ['#FDDBB4', '#E8B88A', '#C68642', '#8D5524', '#4A2912'];
-const HAIR_COLORS = ['#1a0a00', '#5C3317', '#A0522D', '#DAA520', '#C0C0C0', '#FF4500'];
+const HAIR_COLORS = ['#8B5E3C', '#C8A96E', '#B03A2E', '#555555'];
+
+function prevStyle() {
+  hairStyle.value = hairStyle.value === 1 ? 20 : hairStyle.value - 1;
+}
+function nextStyle() {
+  hairStyle.value = hairStyle.value === 20 ? 1 : hairStyle.value + 1;
+}
 
 function emitUpdate() {
   emit('update', {
@@ -31,12 +38,11 @@ watch([silhouette, skinTone, hairStyle, hairColor], emitUpdate);
 </script>
 
 <template>
-  <div class="flex flex-col items-center gap-6">
+  <div class="flex flex-col items-center gap-5 w-full">
 
-    <!-- Preview live -->
-    <div class="bg-questy-sheet/90 border border-questy-gold/40 p-4 flex flex-col items-center gap-1">
-      <span class="text-[9px] text-questy-gold/50 uppercase tracking-widest font-bold">Aperçu</span>
-      <div class="scale-[3] my-4">
+    <!-- Preview live — conteneur 192px = 64×3 pour que le cadre englobe le canvas zoomé -->
+    <div class="w-48 h-48 flex items-center justify-center border border-questy-gold/40 bg-questy-sheet/60">
+      <div class="scale-[3]">
         <AvatarCanvas
           :silhouette="silhouette"
           :skin-tone="skinTone"
@@ -50,7 +56,7 @@ watch([silhouette, skinTone, hairStyle, hairColor], emitUpdate);
     <!-- Silhouette -->
     <div class="w-full space-y-2">
       <p class="text-xs text-questy-gold/70 uppercase tracking-widest">Silhouette</p>
-      <div class="flex gap-3">
+      <div class="flex gap-2">
         <button
           v-for="s in ['A', 'B']"
           :key="s"
@@ -68,12 +74,12 @@ watch([silhouette, skinTone, hairStyle, hairColor], emitUpdate);
     <!-- Ton de peau -->
     <div class="w-full space-y-2">
       <p class="text-xs text-questy-gold/70 uppercase tracking-widest">Teinte de peau</p>
-      <div class="flex gap-2">
+      <div class="flex gap-3">
         <button
           v-for="(color, i) in SKIN_COLORS"
           :key="i"
-          class="w-9 h-9 rounded-full border-2 transition-transform hover:scale-110"
-          :class="skinTone === i + 1 ? 'border-questy-gold scale-110' : 'border-transparent'"
+          class="w-10 h-10 rounded-full border-2 transition-transform hover:scale-110"
+          :class="skinTone === i + 1 ? 'border-questy-gold scale-110' : 'border-white/20'"
           :style="{ backgroundColor: color }"
           @click="skinTone = i + 1"
         />
@@ -83,30 +89,30 @@ watch([silhouette, skinTone, hairStyle, hairColor], emitUpdate);
     <!-- Coiffure -->
     <div class="w-full space-y-2">
       <p class="text-xs text-questy-gold/70 uppercase tracking-widest">Coiffure</p>
-      <div class="flex gap-2">
+      <div class="flex items-center gap-2">
         <button
-          v-for="n in 4"
-          :key="n"
-          class="flex-1 py-2 border text-xs font-bold transition-colors"
-          :class="hairStyle === n
-            ? 'border-questy-gold bg-questy-gold/20 text-questy-gold'
-            : 'border-questy-gold/30 text-questy-light/50 hover:border-questy-gold/60'"
-          @click="hairStyle = n"
-        >
-          Style {{ n }}
-        </button>
+          class="w-10 h-10 border border-questy-gold/30 text-questy-gold text-lg hover:border-questy-gold hover:bg-questy-gold/10 transition-colors"
+          @click="prevStyle"
+        >←</button>
+        <div class="flex-1 flex items-center justify-center border border-questy-gold/20 h-10 bg-questy-sheet/40">
+          <span class="text-sm text-questy-light font-bold tracking-wider">Style {{ hairStyle }}</span>
+        </div>
+        <button
+          class="w-10 h-10 border border-questy-gold/30 text-questy-gold text-lg hover:border-questy-gold hover:bg-questy-gold/10 transition-colors"
+          @click="nextStyle"
+        >→</button>
       </div>
     </div>
 
     <!-- Couleur des cheveux -->
     <div class="w-full space-y-2">
       <p class="text-xs text-questy-gold/70 uppercase tracking-widest">Couleur des cheveux</p>
-      <div class="flex gap-2">
+      <div class="flex gap-3">
         <button
           v-for="(color, i) in HAIR_COLORS"
           :key="i"
-          class="w-9 h-9 rounded-full border-2 transition-transform hover:scale-110"
-          :class="hairColor === i + 1 ? 'border-questy-gold scale-110' : 'border-transparent'"
+          class="w-10 h-10 rounded-full border-2 transition-transform hover:scale-110"
+          :class="hairColor === i + 1 ? 'border-questy-gold scale-110' : 'border-white/20'"
           :style="{ backgroundColor: color }"
           @click="hairColor = i + 1"
         />

@@ -10,22 +10,19 @@ const props = defineProps<{
 }>();
 
 const canvas = ref<HTMLCanvasElement | null>(null);
+const hasRendered = ref(false);
 
 function drawPlaceholder(ctx: CanvasRenderingContext2D) {
   ctx.clearRect(0, 0, 64, 64);
-  // Corps
   ctx.fillStyle = '#c8a87a';
   ctx.beginPath();
   ctx.arc(32, 14, 10, 0, Math.PI * 2);
   ctx.fill();
   ctx.fillRect(18, 24, 28, 24);
-  // Bras
   ctx.fillRect(8, 24, 10, 20);
   ctx.fillRect(46, 24, 10, 20);
-  // Jambes
   ctx.fillRect(18, 48, 12, 16);
   ctx.fillRect(34, 48, 12, 16);
-  // Tenue sombre
   ctx.fillStyle = '#5a3e2b';
   ctx.fillRect(18, 28, 28, 20);
 }
@@ -36,8 +33,8 @@ async function draw() {
   const ctx = el.getContext('2d');
   if (!ctx) return;
 
-  // Placeholder immédiat pendant le chargement des assets
-  drawPlaceholder(ctx);
+  // Placeholder uniquement au premier chargement — évite le clignotement lors des mises à jour
+  if (!hasRendered.value) drawPlaceholder(ctx);
 
   const layers = await useAvatarAssets(
     props.silhouette,
@@ -47,16 +44,10 @@ async function draw() {
     props.heroClass,
   );
 
-  // Rendu dans l'ordre des 9 calques — null = calque absent, ignoré
   const order = [
-    layers.body,
-    layers.hair,
-    layers.outfitLegs,
-    layers.outfitTorso,
-    layers.outfitHead,
-    layers.armorLegs,
-    layers.armorTorso,
-    layers.armorHead,
+    layers.body, layers.hair,
+    layers.outfitLegs, layers.outfitTorso, layers.outfitHead,
+    layers.armorLegs, layers.armorTorso, layers.armorHead,
     layers.weapon,
   ];
 
@@ -67,6 +58,8 @@ async function draw() {
   for (const img of order) {
     if (img) ctx.drawImage(img, 0, 0, 64, 64);
   }
+
+  hasRendered.value = true;
 }
 
 watch(
@@ -75,10 +68,7 @@ watch(
   { immediate: false },
 );
 
-// Déclenché quand le ref canvas est lié au DOM — plus fiable que onMounted seul
-watch(canvas, (el) => {
-  if (el) draw();
-}, { immediate: true });
+watch(canvas, (el) => { if (el) draw(); }, { immediate: true });
 
 onMounted(async () => {
   await nextTick();
