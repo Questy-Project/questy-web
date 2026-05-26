@@ -9,7 +9,8 @@ const hearts = computed(() =>
 <template>
   <div class="flex flex-wrap gap-0.5">
     <span v-for="(full, i) in hearts" :key="i" class="text-base leading-none">
-      {{ full ? "❤️" : "🤍" }} : {{ stock }} / 12
+      {{ full ? "❤️" : "🤍" }}
     </span>
+    <span>{{ stock }} / 12</span>
   </div>
 </template>
