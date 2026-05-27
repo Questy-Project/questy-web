@@ -12,29 +12,11 @@ const props = defineProps<{
 const canvas = ref<HTMLCanvasElement | null>(null);
 const hasRendered = ref(false);
 
-function drawPlaceholder(ctx: CanvasRenderingContext2D) {
-  ctx.clearRect(0, 0, 64, 64);
-  ctx.fillStyle = '#c8a87a';
-  ctx.beginPath();
-  ctx.arc(32, 14, 10, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.fillRect(18, 24, 28, 24);
-  ctx.fillRect(8, 24, 10, 20);
-  ctx.fillRect(46, 24, 10, 20);
-  ctx.fillRect(18, 48, 12, 16);
-  ctx.fillRect(34, 48, 12, 16);
-  ctx.fillStyle = '#5a3e2b';
-  ctx.fillRect(18, 28, 28, 20);
-}
-
 async function draw() {
   const el = canvas.value;
   if (!el) return;
   const ctx = el.getContext('2d');
   if (!ctx) return;
-
-  // Placeholder uniquement au premier chargement — évite le clignotement lors des mises à jour
-  if (!hasRendered.value) drawPlaceholder(ctx);
 
   const layers = await useAvatarAssets(
     props.silhouette,
@@ -77,11 +59,27 @@ onMounted(async () => {
 </script>
 
 <template>
-  <canvas
-    ref="canvas"
-    width="64"
-    height="64"
-    class="block"
-    style="image-rendering: pixelated; image-rendering: crisp-edges;"
-  />
+  <div class="relative w-16 h-16">
+
+    <!-- Loading RPG — affiché uniquement avant le premier rendu des assets -->
+    <div
+      v-if="!hasRendered"
+      class="absolute inset-0 flex flex-col items-center justify-center gap-1"
+    >
+      <span class="text-xl animate-bounce">⚔️</span>
+      <div class="w-8 h-0.5 bg-white/10 rounded-full overflow-hidden">
+        <div class="h-full bg-questy-gold rounded-full animate-loading-bar" />
+      </div>
+    </div>
+
+    <canvas
+      ref="canvas"
+      width="64"
+      height="64"
+      class="block"
+      :class="hasRendered ? 'opacity-100' : 'opacity-0'"
+      style="image-rendering: pixelated; image-rendering: crisp-edges;"
+    />
+
+  </div>
 </template>

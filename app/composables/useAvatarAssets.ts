@@ -36,6 +36,15 @@ const CLASSES_WITH_ARMOR_BODY = new Set([
   'danseur_de_lame',
 ]);
 
+const HAIR_STYLES = [
+  'bang-bun', 'bedhead', 'braid', 'braid2', 'bunches',
+  'curtains', 'dread-long', 'dread-short', 'high-and-tight', 'high-ponytail',
+  'long-messy2', 'long-tied', 'longhawk', 'messy2', 'parted3',
+  'pixie', 'ponytail', 'shoulderl', 'twistfade', 'unkempt',
+];
+
+const HAIR_COLORS = ['light-brown', 'sandy', 'redhead', 'dark-gray'];
+
 const imageCache = new Map<string, HTMLImageElement>();
 
 function loadImage(src: string): Promise<HTMLImageElement | null> {
@@ -76,7 +85,7 @@ export async function useAvatarAssets(
   const [body, hair, outfitLegs, outfitTorso, outfitHead, armorLegs, armorTorso, armorHead, weapon] =
     await Promise.all([
       loadImage(`${base}/body/${silhouette}_skin${skinTone}.png`),
-      loadImage(`${base}/hair/style${hairStyle}_color${hairColor}.png`),
+      loadImage(`${base}/hair/${HAIR_STYLES[hairStyle - 1]}_${HAIR_COLORS[hairColor - 1]}.png`),
       loadImage(`${base}/outfit/legs/${slug}_default.png`),
       loadImage(`${base}/outfit/torso/${slug}_default.png`),
       loadImage(`${base}/outfit/head/${slug}_default.png`),

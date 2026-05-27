@@ -16,7 +16,14 @@ const hairStyle = ref(props.initial?.hairStyle ?? 1);
 const hairColor = ref(props.initial?.hairColor ?? 1);
 
 const SKIN_COLORS = ['#FDDBB4', '#E8B88A', '#C68642', '#8D5524', '#4A2912'];
-const HAIR_COLORS = ['#8B5E3C', '#C8A96E', '#B03A2E', '#555555'];
+const HAIR_COLOR_SWATCHES = ['#8B5E3C', '#C8A96E', '#B03A2E', '#555555'];
+
+const HAIR_STYLE_LABELS = [
+  'Bang bun', 'Bedhead', 'Braid', 'Braid 2', 'Bunches',
+  'Curtains', 'Dread long', 'Dread short', 'High & tight', 'High ponytail',
+  'Long messy', 'Long tied', 'Longhawk', 'Messy', 'Parted',
+  'Pixie', 'Ponytail', 'Shoulderl', 'Twist fade', 'Unkempt',
+];
 
 function prevStyle() {
   hairStyle.value = hairStyle.value === 1 ? 20 : hairStyle.value - 1;
@@ -95,7 +102,7 @@ watch([silhouette, skinTone, hairStyle, hairColor], emitUpdate);
           @click="prevStyle"
         >←</button>
         <div class="flex-1 flex items-center justify-center border border-questy-gold/20 h-10 bg-questy-sheet/40">
-          <span class="text-sm text-questy-light font-bold tracking-wider">Style {{ hairStyle }}</span>
+          <span class="text-sm text-questy-light font-bold tracking-wider">{{ HAIR_STYLE_LABELS[hairStyle - 1] }}</span>
         </div>
         <button
           class="w-10 h-10 border border-questy-gold/30 text-questy-gold text-lg hover:border-questy-gold hover:bg-questy-gold/10 transition-colors"
@@ -109,7 +116,7 @@ watch([silhouette, skinTone, hairStyle, hairColor], emitUpdate);
       <p class="text-xs text-questy-gold/70 uppercase tracking-widest">Couleur des cheveux</p>
       <div class="flex gap-3">
         <button
-          v-for="(color, i) in HAIR_COLORS"
+          v-for="(color, i) in HAIR_COLOR_SWATCHES"
           :key="i"
           class="w-10 h-10 rounded-full border-2 transition-transform hover:scale-110"
           :class="hairColor === i + 1 ? 'border-questy-gold scale-110' : 'border-white/20'"
