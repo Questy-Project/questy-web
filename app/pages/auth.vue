@@ -22,6 +22,7 @@ const pendingCustomization = ref<AvatarCustomization>({
   skinTone: 1,
   hairStyle: 1,
   hairColor: 1,
+  showHood: false,
 });
 
 const previewHeroClass = 'Aventurier';

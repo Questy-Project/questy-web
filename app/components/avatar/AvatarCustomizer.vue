@@ -1,6 +1,22 @@
 <script setup lang="ts">
 import type { AvatarCustomization } from '~/types';
 
+const CLASSES_WITH_OUTFIT_HEAD = new Set(['voleur', 'rodeur']);
+const CLASSES_WITH_ARMOR_HEAD  = new Set([
+  'guerrier', 'tank', 'paladin', 'berserker',
+  'mage_de_guerre', 'chevalier', 'templier', 'champion', 'colosse',
+]);
+
+const HERO_CLASS_SLUG: Record<string, string> = {
+  'Aventurier': 'aventurier', 'Guerrier': 'guerrier', 'Voleur': 'voleur',
+  'Tank': 'tank', 'Mage': 'mage', 'Prêtre': 'pretre', 'Paladin': 'paladin',
+  'Berserker': 'berserker', 'Mage de guerre': 'mage_de_guerre', 'Druide': 'druide',
+  'Sage lettré': 'sage_lettre', 'Chevalier': 'chevalier', 'Templier': 'templier',
+  'Champion': 'champion', 'Rôdeur': 'rodeur', 'Illusionniste': 'illusionniste',
+  'Moine': 'moine', 'Danseur de lame': 'danseur_de_lame', 'Alchimiste': 'alchimiste',
+  'Colosse': 'colosse', 'Nécromant': 'necromant', 'Chaman': 'chaman',
+};
+
 const props = defineProps<{
   heroClass: string;
   initial?: Partial<AvatarCustomization>;
@@ -11,9 +27,14 @@ const emit = defineEmits<{
 }>();
 
 const silhouette = ref(props.initial?.silhouette ?? 'A');
-const skinTone = ref(props.initial?.skinTone ?? 1);
-const hairStyle = ref(props.initial?.hairStyle ?? 1);
-const hairColor = ref(props.initial?.hairColor ?? 1);
+const skinTone   = ref(props.initial?.skinTone ?? 1);
+const hairStyle  = ref(props.initial?.hairStyle ?? 1);
+const hairColor  = ref(props.initial?.hairColor ?? 1);
+const showHood   = ref(props.initial?.showHood ?? false);
+
+const slug       = computed(() => HERO_CLASS_SLUG[props.heroClass] ?? '');
+const hasHood    = computed(() => CLASSES_WITH_OUTFIT_HEAD.has(slug.value) || CLASSES_WITH_ARMOR_HEAD.has(slug.value));
+const hoodLabel  = computed(() => CLASSES_WITH_ARMOR_HEAD.has(slug.value) ? 'Afficher casque' : 'Afficher la capuche');
 
 const SKIN_COLORS = ['#FDDBB4', '#E8B88A', '#C68642', '#8D5524', '#4A2912'];
 const HAIR_COLOR_SWATCHES = ['#8B5E3C', '#C8A96E', '#B03A2E', '#555555'];
@@ -38,10 +59,11 @@ function emitUpdate() {
     skinTone: skinTone.value,
     hairStyle: hairStyle.value,
     hairColor: hairColor.value,
+    showHood: showHood.value,
   });
 }
 
-watch([silhouette, skinTone, hairStyle, hairColor], emitUpdate);
+watch([silhouette, skinTone, hairStyle, hairColor, showHood], emitUpdate, { immediate: true });
 </script>
 
 <template>
@@ -56,6 +78,7 @@ watch([silhouette, skinTone, hairStyle, hairColor], emitUpdate);
           :hair-style="hairStyle"
           :hair-color="hairColor"
           :hero-class="heroClass"
+          :show-hood="showHood"
         />
       </div>
     </div>
@@ -124,6 +147,18 @@ watch([silhouette, skinTone, hairStyle, hairColor], emitUpdate);
           @click="hairColor = i + 1"
         />
       </div>
+    </div>
+
+    <!-- Capuche — visible uniquement pour les classes qui en possèdent une -->
+    <div v-if="hasHood" class="w-full">
+      <label class="flex items-center gap-3 cursor-pointer select-none">
+        <input
+          type="checkbox"
+          v-model="showHood"
+          class="w-4 h-4 accent-questy-gold cursor-pointer"
+        />
+        <span class="text-xs text-questy-gold/70 uppercase tracking-widest">{{ hoodLabel }}</span>
+      </label>
     </div>
 
   </div>

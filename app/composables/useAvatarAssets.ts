@@ -23,6 +23,11 @@ const HERO_CLASS_SLUG: Record<string, string> = {
   'Chaman':          'chaman',
 };
 
+// Classes qui possèdent un calque outfit/head (capuche, chapeau...)
+const CLASSES_WITH_OUTFIT_HEAD = new Set([
+  'voleur', 'rodeur',
+]);
+
 // Classes avec casque (armor_head par-dessus outfit_head)
 const CLASSES_WITH_ARMOR_HEAD = new Set([
   'guerrier', 'tank', 'paladin', 'berserker',
@@ -63,7 +68,7 @@ export interface AvatarLayers {
   outfitLegs: HTMLImageElement | null;
   outfitTorso: HTMLImageElement | null;
   outfitHead: HTMLImageElement | null;
-  armorLegs: HTMLImageElement | null;
+  boots: HTMLImageElement | null;
   armorTorso: HTMLImageElement | null;
   armorHead: HTMLImageElement | null;
   weapon: HTMLImageElement | null;
@@ -75,25 +80,32 @@ export async function useAvatarAssets(
   hairStyle: number,
   hairColor: number,
   heroClass: string,
+  showHood: boolean = false,
 ): Promise<AvatarLayers> {
   const slug = HERO_CLASS_SLUG[heroClass] ?? 'aventurier';
   const base = '/avatar';
 
-  const hasArmorHead = CLASSES_WITH_ARMOR_HEAD.has(slug);
-  const hasArmorBody = CLASSES_WITH_ARMOR_BODY.has(slug);
+  const hasArmorHead    = CLASSES_WITH_ARMOR_HEAD.has(slug);
+  const hasArmorBody    = CLASSES_WITH_ARMOR_BODY.has(slug);
+  const hasOutfitHead   = CLASSES_WITH_OUTFIT_HEAD.has(slug);
+  // Capuche ou casque masque les cheveux quand activé
+  const displayHair        = !((hasOutfitHead || hasArmorHead) && showHood);
+  const displayHoodHead    = hasOutfitHead && showHood;
+  // Le casque est conditionnel au même toggle showHood
+  const displayArmorHead   = hasArmorHead && showHood;
 
-  const [body, hair, outfitLegs, outfitTorso, outfitHead, armorLegs, armorTorso, armorHead, weapon] =
+  const [body, hair, outfitLegs, outfitTorso, outfitHead, boots, armorTorso, armorHead, weapon] =
     await Promise.all([
       loadImage(`${base}/body/${silhouette}_skin${skinTone}.png`),
-      loadImage(`${base}/hair/${HAIR_STYLES[hairStyle - 1]}_${HAIR_COLORS[hairColor - 1]}.png`),
-      loadImage(`${base}/outfit/legs/${slug}_default.png`),
-      loadImage(`${base}/outfit/torso/${slug}_default.png`),
-      loadImage(`${base}/outfit/head/${slug}_default.png`),
-      hasArmorBody ? loadImage(`${base}/armor/legs/${slug}_default.png`) : Promise.resolve(null),
-      hasArmorBody ? loadImage(`${base}/armor/torso/${slug}_default.png`) : Promise.resolve(null),
-      hasArmorHead ? loadImage(`${base}/armor/head/${slug}_default.png`) : Promise.resolve(null),
+      displayHair ? loadImage(`${base}/hair/${HAIR_STYLES[hairStyle - 1]}_${HAIR_COLORS[hairColor - 1]}.png`) : Promise.resolve(null),
+      loadImage(`${base}/outfit/legs/${slug}_${silhouette}.png`),
+      loadImage(`${base}/outfit/torso/${slug}_${silhouette}.png`),
+      displayHoodHead ? loadImage(`${base}/outfit/head/${slug}_default.png`) : Promise.resolve(null),
+      loadImage(`${base}/armor/boots/${slug}_${silhouette}.png`),
+      hasArmorBody ? loadImage(`${base}/armor/torso/${slug}_${silhouette}.png`) : Promise.resolve(null),
+      displayArmorHead ? loadImage(`${base}/armor/head/${slug}_default.png`) : Promise.resolve(null),
       loadImage(`${base}/weapon/${slug}_default.png`),
     ]);
 
-  return { body, hair, outfitLegs, outfitTorso, outfitHead, armorLegs, armorTorso, armorHead, weapon };
+  return { body, hair, outfitLegs, outfitTorso, outfitHead, boots, armorTorso, armorHead, weapon };
 }

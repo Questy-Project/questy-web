@@ -7,6 +7,7 @@ const props = defineProps<{
   hairStyle: number;
   hairColor: number;
   heroClass: string;
+  showHood?: boolean;
 }>();
 
 const canvas = ref<HTMLCanvasElement | null>(null);
@@ -24,12 +25,13 @@ async function draw() {
     props.hairStyle,
     props.hairColor,
     props.heroClass,
+    props.showHood ?? false,
   );
 
   const order = [
     layers.body, layers.hair,
     layers.outfitLegs, layers.outfitTorso, layers.outfitHead,
-    layers.armorLegs, layers.armorTorso, layers.armorHead,
+    layers.boots, layers.armorTorso, layers.armorHead,
     layers.weapon,
   ];
 
@@ -45,7 +47,7 @@ async function draw() {
 }
 
 watch(
-  () => [props.silhouette, props.skinTone, props.hairStyle, props.hairColor, props.heroClass],
+  () => [props.silhouette, props.skinTone, props.hairStyle, props.hairColor, props.heroClass, props.showHood],
   () => draw(),
   { immediate: false },
 );

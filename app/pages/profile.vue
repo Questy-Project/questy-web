@@ -131,13 +131,14 @@ onMounted(async () => {
 
         <!-- Vue portrait (mode lecture) -->
         <template v-if="!showAvatarEditor">
-          <div class="scale-150 my-4">
+          <div v-if="avatar" class="scale-150 my-4">
             <AvatarCanvas
               :silhouette="avatar.silhouette"
               :skin-tone="avatar.skinTone"
               :hair-style="avatar.hairStyle"
               :hair-color="avatar.hairColor"
               :hero-class="avatar.heroClass"
+              :show-hood="avatar.showHood ?? false"
             />
           </div>
           <AvatarHeroClass :hero-class="avatar.heroClass" />
@@ -166,7 +167,7 @@ onMounted(async () => {
         <template v-else>
           <AvatarCustomizer
             :hero-class="avatar.heroClass"
-            :initial="{ silhouette: avatar.silhouette, skinTone: avatar.skinTone, hairStyle: avatar.hairStyle, hairColor: avatar.hairColor }"
+            :initial="{ silhouette: avatar.silhouette, skinTone: avatar.skinTone, hairStyle: avatar.hairStyle, hairColor: avatar.hairColor, showHood: avatar.showHood ?? false }"
             @update="(c) => pendingAvatarCustomization = c"
           />
           <p v-if="avatarError" class="text-red-400 text-xs mt-2">{{ avatarError }}</p>

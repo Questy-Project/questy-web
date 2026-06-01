@@ -17,6 +17,7 @@ export interface AvatarCustomization {
   skinTone: number;
   hairStyle: number;
   hairColor: number;
+  showHood: boolean;
 }
 
 export interface Avatar {
@@ -34,6 +35,7 @@ export interface Avatar {
   skinTone: number;
   hairStyle: number;
   hairColor: number;
+  showHood: boolean;
 }
 
 export interface AvatarResponse extends Avatar {
