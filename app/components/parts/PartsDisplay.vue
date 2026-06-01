@@ -7,7 +7,7 @@ const hearts = computed(() =>
 </script>
 
 <template>
-  <div class="flex flex-wrap gap-0.5">
+  <div class="grid grid-cols-6 gap-0.5">
     <span v-for="(full, i) in hearts" :key="i" class="text-base leading-none">
       {{ full ? "❤️" : "🤍" }}
     </span>
