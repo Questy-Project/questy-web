@@ -12,6 +12,14 @@ export interface AuthResponse {
   access_token: string;
 }
 
+export interface AvatarCustomization {
+  silhouette: string;
+  skinTone: number;
+  hairStyle: number;
+  hairColor: number;
+  showHood: boolean;
+}
+
 export interface Avatar {
   id: string;
   level: number;
@@ -23,6 +31,11 @@ export interface Avatar {
   intelligence: number;
   spirit: number;
   vitality: number;
+  silhouette: string;
+  skinTone: number;
+  hairStyle: number;
+  hairColor: number;
+  showHood: boolean;
 }
 
 export interface AvatarResponse extends Avatar {

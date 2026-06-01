@@ -94,8 +94,15 @@ onMounted(async () => {
             <span class="absolute bottom-[-3px] left-[-3px] w-5 h-5 border-b-2 border-l-2 border-questy-gold" />
             <span class="absolute bottom-[-3px] right-[-3px] w-5 h-5 border-b-2 border-r-2 border-questy-gold" />
             <div class="text-[9px] text-questy-gold/50 uppercase tracking-widest font-bold">Portrait</div>
-            <div class="scale-125 sm:scale-150 my-2 sm:my-4">
-              <AvatarAvatar2D :hero-class="avatar.heroClass" />
+            <div v-if="avatar" class="scale-125 sm:scale-150 my-2 sm:my-4">
+              <AvatarCanvas
+                :silhouette="avatar.silhouette"
+                :skin-tone="avatar.skinTone"
+                :hair-style="avatar.hairStyle"
+                :hair-color="avatar.hairColor"
+                :hero-class="avatar.heroClass"
+                :show-hood="avatar.showHood ?? false"
+              />
             </div>
           </div>
 

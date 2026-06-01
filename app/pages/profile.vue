@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { ActivityLog } from "~/types";
+import type { ActivityLog, AvatarCustomization } from "~/types";
 import { STAT_COLOR_MAP } from "~/constants/heroClasses";
 
 definePageMeta({ middleware: "auth" });
@@ -60,6 +60,25 @@ function logout() {
   navigateTo("/auth");
 }
 
+const showAvatarEditor = ref(false);
+const avatarSaving = ref(false);
+const avatarError = ref<string | null>(null);
+const pendingAvatarCustomization = ref<AvatarCustomization | null>(null);
+
+async function saveAvatarCustomization() {
+  if (!pendingAvatarCustomization.value) { showAvatarEditor.value = false; return; }
+  avatarSaving.value = true;
+  avatarError.value = null;
+  try {
+    await avatarStore.updateCustomization(pendingAvatarCustomization.value);
+    showAvatarEditor.value = false;
+  } catch {
+    avatarError.value = "Impossible de sauvegarder les modifications.";
+  } finally {
+    avatarSaving.value = false;
+  }
+}
+
 function logDisplayName(log: ActivityLog): string {
   return log.customName ?? log.activity?.name ?? "Activité";
 }
@@ -114,21 +133,65 @@ onMounted(async () => {
         <span class="absolute bottom-[-3px] left-[-3px] w-5 h-5 border-b-2 border-l-2 border-questy-gold" />
         <span class="absolute bottom-[-3px] right-[-3px] w-5 h-5 border-b-2 border-r-2 border-questy-gold" />
         <div class="text-xs text-questy-gold/50 uppercase tracking-widest font-bold">Portrait du Héros</div>
-        <AvatarAvatar2D :hero-class="avatar.heroClass" />
-        <AvatarHeroClass :hero-class="avatar.heroClass" />
-        <p class="text-xs text-questy-light/50">Niveau {{ avatar.level }}</p>
-        <div class="w-full">
-          <div class="flex justify-between text-xs text-questy-light/50 mb-1">
-            <span>XP</span>
-            <span>{{ avatar.xp }} / {{ avatar.xpNextLevel }}</span>
-          </div>
-          <div class="bg-questy-dark rounded-full h-2">
-            <div
-              class="h-full rounded-full bg-questy-purple transition-all duration-500"
-              :style="{ width: `${xpPercent}%` }"
+
+        <!-- Vue portrait (mode lecture) -->
+        <template v-if="!showAvatarEditor">
+          <div v-if="avatar" class="scale-150 my-4">
+            <AvatarCanvas
+              :silhouette="avatar.silhouette"
+              :skin-tone="avatar.skinTone"
+              :hair-style="avatar.hairStyle"
+              :hair-color="avatar.hairColor"
+              :hero-class="avatar.heroClass"
+              :show-hood="avatar.showHood ?? false"
             />
           </div>
-        </div>
+          <AvatarHeroClass :hero-class="avatar.heroClass" />
+          <p class="text-xs text-questy-light/50">Niveau {{ avatar.level }}</p>
+          <div class="w-full">
+            <div class="flex justify-between text-xs text-questy-light/50 mb-1">
+              <span>XP</span>
+              <span>{{ avatar.xp }} / {{ avatar.xpNextLevel }}</span>
+            </div>
+            <div class="bg-questy-dark rounded-full h-2">
+              <div
+                class="h-full rounded-full bg-questy-purple transition-all duration-500"
+                :style="{ width: `${xpPercent}%` }"
+              />
+            </div>
+          </div>
+          <button
+            class="mt-1 text-xs text-questy-gold/70 underline hover:text-questy-gold"
+            @click="showAvatarEditor = true"
+          >
+            Modifier mon avatar
+          </button>
+        </template>
+
+        <!-- Éditeur avatar (mode édition) -->
+        <template v-else>
+          <AvatarCustomizer
+            :hero-class="avatar.heroClass"
+            :initial="{ silhouette: avatar.silhouette, skinTone: avatar.skinTone, hairStyle: avatar.hairStyle, hairColor: avatar.hairColor, showHood: avatar.showHood ?? false }"
+            @update="(c) => pendingAvatarCustomization = c"
+          />
+          <p v-if="avatarError" class="text-red-400 text-xs mt-2">{{ avatarError }}</p>
+          <div class="flex gap-2 mt-4 w-full">
+            <button
+              class="flex-1 py-2 border border-questy-gold/30 text-questy-light/50 text-xs uppercase tracking-widest hover:border-questy-gold/60"
+              @click="showAvatarEditor = false"
+            >
+              Annuler
+            </button>
+            <button
+              :disabled="avatarSaving"
+              class="flex-1 py-2 bg-questy-gold/20 border border-questy-gold text-questy-gold text-xs font-bold uppercase tracking-widest disabled:opacity-50"
+              @click="saveAvatarCustomization"
+            >
+              {{ avatarSaving ? 'Sauvegarde...' : 'Terminé' }}
+            </button>
+          </div>
+        </template>
       </div>
 
       <!-- Bloc 2 : Stats -->
