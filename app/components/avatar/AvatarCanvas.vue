@@ -30,8 +30,9 @@ async function draw() {
 
   const order = [
     layers.body, layers.hair,
+    layers.boots,
     layers.outfitLegs, layers.outfitTorso, layers.outfitHead,
-    layers.boots, layers.armorTorso, layers.armorHead,
+    layers.armorTorso, layers.armorHead,
     layers.weapon,
   ];
 
