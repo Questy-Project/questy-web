@@ -1,4 +1,4 @@
-const HERO_CLASS_SLUG: Record<string, string> = {
+export const HERO_CLASS_SLUG: Record<string, string> = {
   'Aventurier':      'aventurier',
   'Guerrier':        'guerrier',
   'Voleur':          'voleur',
@@ -24,12 +24,12 @@ const HERO_CLASS_SLUG: Record<string, string> = {
 };
 
 // Classes qui possèdent un calque outfit/head (capuche, chapeau...)
-const CLASSES_WITH_OUTFIT_HEAD = new Set([
+export const CLASSES_WITH_OUTFIT_HEAD = new Set([
   'voleur', 'rodeur',
 ]);
 
 // Classes avec casque (armor_head par-dessus outfit_head)
-const CLASSES_WITH_ARMOR_HEAD = new Set([
+export const CLASSES_WITH_ARMOR_HEAD = new Set([
   'guerrier', 'tank', 'paladin', 'berserker',
   'mage_de_guerre', 'chevalier', 'templier', 'champion', 'colosse',
 ]);
