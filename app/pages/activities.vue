@@ -46,7 +46,7 @@ function onSelect(activity: Activity | null, custom: boolean) {
 async function submit() {
   await activitiesStore.logActivity();
   if (activitiesStore.success) {
-    await Promise.all([avatarStore.fetchAvatar(), partsStore.fetchParts()]);
+    Promise.all([avatarStore.fetchAvatar(), partsStore.fetchParts()]).catch(() => {});
     timer = setTimeout(() => {
       activitiesStore.reset();
       navigateTo('/dashboard');
