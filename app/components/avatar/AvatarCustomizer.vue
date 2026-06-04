@@ -1,21 +1,6 @@
 <script setup lang="ts">
 import type { AvatarCustomization } from '~/types';
-
-const CLASSES_WITH_OUTFIT_HEAD = new Set(['voleur', 'rodeur']);
-const CLASSES_WITH_ARMOR_HEAD  = new Set([
-  'guerrier', 'tank', 'paladin', 'berserker',
-  'mage_de_guerre', 'chevalier', 'templier', 'champion', 'colosse',
-]);
-
-const HERO_CLASS_SLUG: Record<string, string> = {
-  'Aventurier': 'aventurier', 'Guerrier': 'guerrier', 'Voleur': 'voleur',
-  'Tank': 'tank', 'Mage': 'mage', 'Prêtre': 'pretre', 'Paladin': 'paladin',
-  'Berserker': 'berserker', 'Mage de guerre': 'mage_de_guerre', 'Druide': 'druide',
-  'Sage lettré': 'sage_lettre', 'Chevalier': 'chevalier', 'Templier': 'templier',
-  'Champion': 'champion', 'Rôdeur': 'rodeur', 'Illusionniste': 'illusionniste',
-  'Moine': 'moine', 'Danseur de lame': 'danseur_de_lame', 'Alchimiste': 'alchimiste',
-  'Colosse': 'colosse', 'Nécromant': 'necromant', 'Chaman': 'chaman',
-};
+import { HERO_CLASS_SLUG, CLASSES_WITH_OUTFIT_HEAD, CLASSES_WITH_ARMOR_HEAD } from '~/composables/useAvatarAssets';
 
 const props = defineProps<{
   heroClass: string;
