@@ -6,6 +6,7 @@ export interface User {
   familyId: string | null;
   isFamilyOwner: boolean;
   createdAt: string;
+  role: 'USER' | 'ADMIN';
 }
 
 export interface AuthResponse {

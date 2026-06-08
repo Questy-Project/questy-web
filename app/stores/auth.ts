@@ -7,6 +7,7 @@ export const useAuthStore = defineStore("auth", () => {
   const user = ref<User | null>(null);
 
   const isAuthenticated = computed(() => !!token.value);
+  const isAdmin = computed(() => user.value?.role === 'ADMIN');
 
   async function login(email: string, password: string) {
     const data = await useApi<AuthResponse>("/auth/login", {
@@ -52,6 +53,7 @@ export const useAuthStore = defineStore("auth", () => {
         user,
         token,
         isAuthenticated,
+        isAdmin,
         login,
         register,
         logout,
