@@ -22,6 +22,13 @@ const canSubmitReading = computed(
   () => !isReadingActivity.value || (bookTitle.value.trim() !== '' && bookAuthor.value.trim() !== ''),
 );
 
+const canSubmitFinal = computed(() => {
+  if (isReadingActivity.value) {
+    return !!activitiesStore.selectedActivity && !!activitiesStore.duration && canSubmitReading.value;
+  }
+  return activitiesStore.canSubmit && canSubmitReading.value;
+});
+
 const difficultyOptions: { label: string; value: 'easy' | 'medium' | 'hard'; icon: string }[] = [
   { label: 'Facile',    value: 'easy',   icon: 'sentiment_satisfied' },
   { label: 'Moyen',     value: 'medium', icon: 'sentiment_neutral' },
@@ -38,10 +45,6 @@ const quizLoading      = ref(false);
 const quizError        = ref('');
 const quizResult       = ref<{ score: number; xpGained: number; partsUnlocked: number } | null>(null);
 const chatContainer    = ref<HTMLElement | null>(null);
-
-const intensityToFormat: Record<number, 'easy' | 'medium' | 'hard'> = {
-  1: 'easy', 1.5: 'medium', 2: 'hard',
-};
 
 let timer: ReturnType<typeof setTimeout> | null = null;
 
@@ -78,10 +81,10 @@ function onSelect(activity: Activity | null, custom: boolean) {
 }
 
 async function submit() {
-  if (!canSubmitReading.value) return;
-  await activitiesStore.logActivity();
+  if (!canSubmitFinal.value) return;
 
-  if (activitiesStore.success && isReadingActivity.value) {
+  if (isReadingActivity.value) {
+    // Pour les lectures : démarrer le quiz directement sans logger l'activité
     showQuizModal.value = true;
     quizLoading.value   = true;
     quizError.value     = '';
@@ -91,8 +94,10 @@ async function submit() {
         body: {
           title:        bookTitle.value,
           author:       bookAuthor.value,
-          difficulty:   intensityToFormat[activitiesStore.intensity ?? 1],
+          difficulty:   bookDifficulty.value,
           activityName: activitiesStore.selectedActivity!.name,
+          activityId:   activitiesStore.selectedActivity!.id,
+          duration:     activitiesStore.duration!,
         },
       });
       quizSessionId.value = res.sessionId;
@@ -104,8 +109,12 @@ async function submit() {
     } finally {
       quizLoading.value = false;
     }
-  } else if (activitiesStore.success) {
-    timer = setTimeout(() => { activitiesStore.reset(); navigateTo('/dashboard'); }, 2000);
+  } else {
+    // Pour les autres activités : comportement habituel
+    await activitiesStore.logActivity();
+    if (activitiesStore.success) {
+      timer = setTimeout(() => { activitiesStore.reset(); navigateTo('/dashboard'); }, 2000);
+    }
   }
 }
 
@@ -269,29 +278,31 @@ function closeResultAndGoHome() {
           </div>
         </div>
 
-        <!-- Intensité -->
-        <div class="space-y-2">
-          <p class="text-xs text-questy-gold/70 uppercase tracking-widest font-bold">Intensité</p>
-          <div class="grid grid-cols-3 gap-2">
-            <button
-              v-for="i in intensities"
-              :key="i.value"
-              class="py-3 border transition-colors text-center"
-              :class="activitiesStore.intensity === i.value
-                ? 'bg-questy-gold/20 border-questy-gold'
-                : 'bg-questy-sheet/90 border-questy-gold/20'"
-              @click="activitiesStore.intensity = i.value"
-            >
-              <span class="material-symbols-outlined text-questy-gold text-xl block">{{ i.icon }}</span>
-              <div class="text-xs font-semibold mt-1">{{ i.label }}</div>
-              <div class="text-[10px] text-questy-light/50">×{{ i.value }}</div>
-            </button>
+        <!-- Intensité (masquée pour les lectures — remplacée par la difficulté du quiz) -->
+        <template v-if="!isReadingActivity">
+          <div class="space-y-2">
+            <p class="text-xs text-questy-gold/70 uppercase tracking-widest font-bold">Intensité</p>
+            <div class="grid grid-cols-3 gap-2">
+              <button
+                v-for="i in intensities"
+                :key="i.value"
+                class="py-3 border transition-colors text-center"
+                :class="activitiesStore.intensity === i.value
+                  ? 'bg-questy-gold/20 border-questy-gold'
+                  : 'bg-questy-sheet/90 border-questy-gold/20'"
+                @click="activitiesStore.intensity = i.value"
+              >
+                <span class="material-symbols-outlined text-questy-gold text-xl block">{{ i.icon }}</span>
+                <div class="text-xs font-semibold mt-1">{{ i.label }}</div>
+                <div class="text-[10px] text-questy-light/50">×{{ i.value }}</div>
+              </button>
+            </div>
           </div>
-        </div>
+        </template>
 
         <!-- Aperçu gains -->
         <div
-          v-if="activitiesStore.duration && activitiesStore.intensity"
+          v-if="!isReadingActivity && activitiesStore.duration && activitiesStore.intensity"
           class="relative bg-questy-sheet/90 border border-questy-gold/40 px-4 py-3"
         >
           <span class="absolute top-[-3px] left-[-3px] w-5 h-5 border-t-2 border-l-2 border-questy-gold" />
@@ -317,7 +328,7 @@ function closeResultAndGoHome() {
         <button
           class="relative w-full overflow-hidden transition-all"
           :class="activitiesStore.canSubmit ? 'active:translate-y-0.5' : 'opacity-40 cursor-not-allowed'"
-          :disabled="!activitiesStore.canSubmit || !canSubmitReading || activitiesStore.loading"
+          :disabled="!canSubmitFinal || activitiesStore.loading"
           @click="submit"
         >
           <div class="absolute inset-0 bg-gradient-to-b from-questy-gold to-[#d4af37]" />
