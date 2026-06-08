@@ -99,12 +99,12 @@ onMounted(async () => {
 
         <!-- Stats 2 colonnes × 3 lignes -->
         <div class="w-full max-w-xs sm:max-w-sm grid grid-cols-2 gap-3">
-          <AvatarStatBar large label="Force"     :value="avatar.strength"     :max-value="maxStat" :color="STAT_COLOR_MAP.strength" />
-          <AvatarStatBar large label="Intel."    :value="avatar.intelligence" :max-value="maxStat" :color="STAT_COLOR_MAP.intelligence" />
-          <AvatarStatBar large label="Agilité"   :value="avatar.agility"      :max-value="maxStat" :color="STAT_COLOR_MAP.agility" />
-          <AvatarStatBar large label="Esprit"    :value="avatar.spirit"       :max-value="maxStat" :color="STAT_COLOR_MAP.spirit" />
-          <AvatarStatBar large label="Endurance" :value="avatar.endurance"    :max-value="maxStat" :color="STAT_COLOR_MAP.endurance" />
-          <AvatarStatBar large label="Vitalité"  :value="avatar.vitality"     :max-value="maxStat" :color="STAT_COLOR_MAP.vitality" />
+          <AvatarStatBar large label="Force"     :value="avatar.strength"     :max-value="100" :color="STAT_COLOR_MAP.strength" />
+          <AvatarStatBar large label="Intel."    :value="avatar.intelligence" :max-value="100" :color="STAT_COLOR_MAP.intelligence" />
+          <AvatarStatBar large label="Agilité"   :value="avatar.agility"      :max-value="100" :color="STAT_COLOR_MAP.agility" />
+          <AvatarStatBar large label="Esprit"    :value="avatar.spirit"       :max-value="100" :color="STAT_COLOR_MAP.spirit" />
+          <AvatarStatBar large label="Endurance" :value="avatar.endurance"    :max-value="100" :color="STAT_COLOR_MAP.endurance" />
+          <AvatarStatBar large label="Vitalité"  :value="avatar.vitality"     :max-value="100" :color="STAT_COLOR_MAP.vitality" />
         </div>
 
       </div>

@@ -218,7 +218,7 @@ onMounted(async () => {
             :key="stat.key"
             :label="stat.label"
             :value="(avatar[stat.key] as number)"
-            :max-value="maxStat"
+            :max-value="100"
             :description="stat.description"
             :color="stat.color"
           />
