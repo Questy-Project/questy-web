@@ -295,5 +295,7 @@ async function submitStats() {
         </div>
       </div>
     </div>
+
+    <UiBottomNav />
   </div>
 </template>
