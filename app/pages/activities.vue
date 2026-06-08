@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { Activity } from '~/types';
+import type { QuizStartResponse, QuizMessageResponse } from '~/types';
 
 definePageMeta({ middleware: 'auth' });
 
@@ -8,6 +9,39 @@ const avatarStore = useAvatarStore();
 const partsStore = usePartsStore();
 
 const showSheet = ref(false);
+
+// Formulaire lecture
+const bookTitle      = ref('');
+const bookAuthor     = ref('');
+const bookDifficulty = ref<'easy' | 'medium' | 'hard'>('easy');
+
+const isReadingActivity = computed(
+  () => activitiesStore.selectedActivity?.category === 'Lecture',
+);
+const canSubmitReading = computed(
+  () => !isReadingActivity.value || (bookTitle.value.trim() !== '' && bookAuthor.value.trim() !== ''),
+);
+
+const difficultyOptions: { label: string; value: 'easy' | 'medium' | 'hard'; icon: string }[] = [
+  { label: 'Facile',    value: 'easy',   icon: 'sentiment_satisfied' },
+  { label: 'Moyen',     value: 'medium', icon: 'sentiment_neutral' },
+  { label: 'Difficile', value: 'hard',   icon: 'sentiment_very_dissatisfied' },
+];
+
+// Quiz — état
+const showQuizModal    = ref(false);
+const showResultModal  = ref(false);
+const quizSessionId    = ref('');
+const chatMessages     = ref<{ role: 'user' | 'model'; text: string }[]>([]);
+const userInput        = ref('');
+const quizLoading      = ref(false);
+const quizError        = ref('');
+const quizResult       = ref<{ score: number; xpGained: number; partsUnlocked: number } | null>(null);
+const chatContainer    = ref<HTMLElement | null>(null);
+
+const intensityToFormat: Record<number, 'easy' | 'medium' | 'hard'> = {
+  1: 'easy', 1.5: 'medium', 2: 'hard',
+};
 
 let timer: ReturnType<typeof setTimeout> | null = null;
 
@@ -44,14 +78,79 @@ function onSelect(activity: Activity | null, custom: boolean) {
 }
 
 async function submit() {
+  if (!canSubmitReading.value) return;
   await activitiesStore.logActivity();
-  if (activitiesStore.success) {
-    Promise.all([avatarStore.fetchAvatar(), partsStore.fetchParts()]).catch(() => {});
-    timer = setTimeout(() => {
-      activitiesStore.reset();
-      navigateTo('/dashboard');
-    }, 2000);
+
+  if (activitiesStore.success && isReadingActivity.value) {
+    showQuizModal.value = true;
+    quizLoading.value   = true;
+    quizError.value     = '';
+    try {
+      const res = await useApi<QuizStartResponse>('/quiz/start', {
+        method: 'POST',
+        body: {
+          title:        bookTitle.value,
+          author:       bookAuthor.value,
+          difficulty:   intensityToFormat[activitiesStore.intensity ?? 1],
+          activityName: activitiesStore.selectedActivity!.name,
+        },
+      });
+      quizSessionId.value = res.sessionId;
+      chatMessages.value  = [{ role: 'model', text: res.message }];
+      await nextTick();
+      scrollChat();
+    } catch {
+      quizError.value = 'Le quiz est temporairement indisponible.';
+    } finally {
+      quizLoading.value = false;
+    }
+  } else if (activitiesStore.success) {
+    timer = setTimeout(() => { activitiesStore.reset(); navigateTo('/dashboard'); }, 2000);
   }
+}
+
+async function sendMessage() {
+  if (!userInput.value.trim() || quizLoading.value) return;
+  const msg = userInput.value.trim();
+  userInput.value = '';
+  chatMessages.value.push({ role: 'user', text: msg });
+  quizLoading.value = true;
+  await nextTick();
+  scrollChat();
+
+  try {
+    const res = await useApi<QuizMessageResponse>('/quiz/message', {
+      method: 'POST',
+      body: { sessionId: quizSessionId.value, message: msg },
+    });
+    chatMessages.value.push({ role: 'model', text: res.message });
+    await nextTick();
+    scrollChat();
+
+    if (res.type === 'score') {
+      setTimeout(() => {
+        showQuizModal.value   = false;
+        quizResult.value      = { score: res.score!, xpGained: res.xpGained!, partsUnlocked: res.partsUnlocked! };
+        showResultModal.value = true;
+      }, 1500);
+    }
+  } catch {
+    chatMessages.value.push({ role: 'model', text: 'Une erreur est survenue. Réessaie.' });
+  } finally {
+    quizLoading.value = false;
+  }
+}
+
+function scrollChat() {
+  if (chatContainer.value) {
+    chatContainer.value.scrollTop = chatContainer.value.scrollHeight;
+  }
+}
+
+function closeResultAndGoHome() {
+  showResultModal.value = false;
+  activitiesStore.reset();
+  navigateTo('/dashboard');
 }
 </script>
 
@@ -106,6 +205,51 @@ async function submit() {
             <span class="text-questy-gold">▼</span>
           </button>
         </div>
+
+        <!-- Formulaire lecture (conditionnel) -->
+        <template v-if="isReadingActivity">
+          <div class="space-y-2">
+            <p class="text-xs text-questy-gold/70 uppercase tracking-widest font-bold">Type de lecture</p>
+            <div class="w-full bg-questy-sheet/60 border border-questy-gold/20 px-4 py-3 text-sm text-questy-light/60 italic">
+              {{ activitiesStore.selectedActivity?.name }}
+            </div>
+          </div>
+          <div class="space-y-2">
+            <p class="text-xs text-questy-gold/70 uppercase tracking-widest font-bold">Titre du livre</p>
+            <input
+              v-model="bookTitle"
+              type="text"
+              placeholder="Ex : Le Seigneur des Anneaux"
+              class="w-full bg-questy-sheet/90 border border-questy-gold/40 px-4 py-3 text-sm text-questy-light placeholder:text-questy-light/30 focus:outline-none focus:border-questy-gold"
+            />
+          </div>
+          <div class="space-y-2">
+            <p class="text-xs text-questy-gold/70 uppercase tracking-widest font-bold">Auteur</p>
+            <input
+              v-model="bookAuthor"
+              type="text"
+              placeholder="Ex : J.R.R. Tolkien"
+              class="w-full bg-questy-sheet/90 border border-questy-gold/40 px-4 py-3 text-sm text-questy-light placeholder:text-questy-light/30 focus:outline-none focus:border-questy-gold"
+            />
+          </div>
+          <div class="space-y-2">
+            <p class="text-xs text-questy-gold/70 uppercase tracking-widest font-bold">Difficulté du quiz</p>
+            <div class="grid grid-cols-3 gap-2">
+              <button
+                v-for="d in difficultyOptions"
+                :key="d.value"
+                class="py-3 border transition-colors text-center"
+                :class="bookDifficulty === d.value
+                  ? 'bg-questy-gold/20 border-questy-gold'
+                  : 'bg-questy-sheet/90 border-questy-gold/20'"
+                @click="bookDifficulty = d.value"
+              >
+                <span class="material-symbols-outlined text-questy-gold text-xl block">{{ d.icon }}</span>
+                <div class="text-xs font-semibold mt-1 text-questy-light">{{ d.label }}</div>
+              </button>
+            </div>
+          </div>
+        </template>
 
         <!-- Durée -->
         <div class="space-y-2">
@@ -173,7 +317,7 @@ async function submit() {
         <button
           class="relative w-full overflow-hidden transition-all"
           :class="activitiesStore.canSubmit ? 'active:translate-y-0.5' : 'opacity-40 cursor-not-allowed'"
-          :disabled="!activitiesStore.canSubmit || activitiesStore.loading"
+          :disabled="!activitiesStore.canSubmit || !canSubmitReading || activitiesStore.loading"
           @click="submit"
         >
           <div class="absolute inset-0 bg-gradient-to-b from-questy-gold to-[#d4af37]" />
