@@ -24,4 +24,5 @@ logs
 !.env.example
 
 # Claude Code
+docs/
 .superpowers/

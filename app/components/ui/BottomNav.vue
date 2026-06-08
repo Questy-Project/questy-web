@@ -1,17 +1,26 @@
 <script setup lang="ts">
 const route = useRoute();
+const authStore = useAuthStore();
 
-const tabs = [
-  { label: "Accueil", icon: "home", path: "/dashboard" },
-  { label: "Activités", icon: "bolt", path: "/activities" },
-  { label: "Tournoi", icon: "emoji_events", path: "/tournament", disabled: true },
-  { label: "Profil", icon: "person", path: "/profile" },
+const allTabs = [
+  { label: 'Accueil',    icon: 'home',          path: '/dashboard' },
+  { label: 'Activités',  icon: 'bolt',          path: '/activities' },
+  { label: 'Tournoi',    icon: 'emoji_events',  path: '/tournament', disabled: true },
+  { label: 'Profil',     icon: 'person',        path: '/profile' },
+  { label: 'Admin',      icon: 'shield_person', path: '/admin', adminOnly: true },
 ];
+
+const tabs = computed(() =>
+  allTabs.filter(t => !t.adminOnly || authStore.isAdmin)
+);
 </script>
 
 <template>
   <nav class="fixed bottom-0 left-0 right-0 bg-questy-sheet border-t border-questy-gold/20 z-50">
-    <div class="grid grid-cols-4 max-w-lg mx-auto">
+    <div
+      class="max-w-lg mx-auto"
+      :class="tabs.length === 5 ? 'grid grid-cols-5' : 'grid grid-cols-4'"
+    >
       <template v-for="tab in tabs" :key="tab.path">
         <NuxtLink
           v-if="!tab.disabled"
