@@ -340,5 +340,107 @@ function closeResultAndGoHome() {
       @close="showSheet = false"
     />
 
+    <!-- Modale quiz chat Gemini -->
+    <div
+      v-if="showQuizModal"
+      class="fixed inset-0 bg-black/80 z-50 flex flex-col"
+    >
+      <div class="flex flex-col h-full max-w-xl mx-auto w-full">
+        <!-- Header -->
+        <div class="bg-questy-sheet border-b border-questy-gold/40 px-4 py-3 flex items-center gap-3 flex-shrink-0">
+          <span class="material-symbols-outlined text-questy-gold">quiz</span>
+          <div>
+            <p class="text-sm font-bold text-questy-gold" style="font-family: 'Newsreader', serif">
+              Le Grand Quiz Littéraire
+            </p>
+            <p class="text-xs text-questy-light/50">{{ bookTitle }} · {{ bookAuthor }}</p>
+          </div>
+        </div>
+
+        <!-- Messages -->
+        <div
+          ref="chatContainer"
+          class="flex-1 overflow-y-auto px-4 py-4 space-y-3 bg-questy-dark"
+        >
+          <div
+            v-for="(msg, i) in chatMessages"
+            :key="i"
+            class="flex"
+            :class="msg.role === 'user' ? 'justify-end' : 'justify-start'"
+          >
+            <div
+              class="max-w-[85%] px-4 py-3 rounded-xl text-sm leading-relaxed whitespace-pre-wrap"
+              :class="msg.role === 'user'
+                ? 'bg-questy-gold/20 border border-questy-gold/40 text-questy-light'
+                : 'bg-questy-sheet/90 border border-questy-gold/20 text-questy-light'"
+            >
+              {{ msg.text }}
+            </div>
+          </div>
+
+          <div v-if="quizLoading" class="flex justify-start">
+            <div class="bg-questy-sheet/90 border border-questy-gold/20 px-4 py-3 rounded-xl text-sm text-questy-light/50 italic">
+              Gemini réfléchit...
+            </div>
+          </div>
+
+          <p v-if="quizError" class="text-center text-red-400 text-sm">{{ quizError }}</p>
+        </div>
+
+        <!-- Input -->
+        <div class="bg-questy-sheet border-t border-questy-gold/40 px-4 py-3 flex gap-2 flex-shrink-0">
+          <input
+            v-model="userInput"
+            type="text"
+            placeholder="Ta réponse..."
+            class="flex-1 bg-questy-dark border border-questy-gold/30 px-4 py-2 text-sm text-questy-light placeholder:text-questy-light/30 focus:outline-none focus:border-questy-gold rounded-lg"
+            :disabled="quizLoading"
+            @keyup.enter="sendMessage"
+          />
+          <button
+            :disabled="quizLoading || !userInput.trim()"
+            class="px-4 py-2 bg-questy-gold/20 border border-questy-gold/40 rounded-lg text-questy-gold font-bold text-sm hover:bg-questy-gold/30 transition disabled:opacity-50"
+            @click="sendMessage"
+          >
+            <span class="material-symbols-outlined text-lg">send</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modale résultats -->
+    <div
+      v-if="showResultModal && quizResult"
+      class="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4"
+    >
+      <div class="bg-questy-sheet border border-questy-gold/40 rounded-xl p-6 w-full max-w-sm text-center">
+        <h2
+          class="text-2xl font-bold text-questy-gold mb-2"
+          style="font-family: 'Newsreader', serif"
+        >
+          🎉 Quiz terminé !
+        </h2>
+        <p class="text-4xl font-bold text-questy-light mb-4">{{ quizResult.score }}%</p>
+
+        <div class="space-y-2 mb-6">
+          <div class="flex justify-center items-center gap-2 text-sm">
+            <span class="material-symbols-outlined text-blue-400">psychology</span>
+            <span class="text-questy-light font-bold">+{{ quizResult.xpGained }} XP Intelligence</span>
+          </div>
+          <div v-if="quizResult.partsUnlocked > 0" class="flex justify-center items-center gap-2 text-sm">
+            <span class="material-symbols-outlined text-questy-gold" style="font-variation-settings:'FILL' 1">favorite</span>
+            <span class="text-questy-light font-bold">+{{ quizResult.partsUnlocked }} cœur{{ quizResult.partsUnlocked > 1 ? 's' : '' }}</span>
+          </div>
+        </div>
+
+        <button
+          class="w-full py-3 bg-questy-gold/20 border border-questy-gold/40 rounded-lg text-questy-gold font-bold hover:bg-questy-gold/30 transition"
+          @click="closeResultAndGoHome"
+        >
+          Retour au tableau de bord
+        </button>
+      </div>
+    </div>
+
   </div>
 </template>
