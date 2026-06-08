@@ -168,7 +168,7 @@ async function submitStats() {
             class="w-full py-3 bg-questy-gold/20 border border-questy-gold/40 rounded-lg text-questy-gold font-bold text-sm hover:bg-questy-gold/30 transition disabled:opacity-50"
             @click="triggerCron('recharge', '/admin/crons/parts-recharge')"
           >
-            {{ cronLoading['recharge'] ? 'Exécution...' : '🔁 Recharger les parties' }}
+            {{ cronLoading['recharge'] ? 'Exécution...' : '🔁 Déclencher la recharge nocturne' }}
           </button>
           <p v-if="cronMessages['recharge']" class="text-xs text-green-400 mt-1 text-center">
             ✅ {{ cronMessages['recharge'] }}
