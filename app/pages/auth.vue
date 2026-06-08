@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import type { AvatarCustomization } from '~/types';
 
+definePageMeta({ layout: false });
+
 const token = useCookie("token");
 if (token.value) navigateTo("/dashboard");
 

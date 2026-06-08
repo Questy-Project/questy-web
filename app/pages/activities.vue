@@ -196,6 +196,5 @@ async function submit() {
       @close="showSheet = false"
     />
 
-    <UiBottomNav />
   </div>
 </template>

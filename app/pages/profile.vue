@@ -360,6 +360,5 @@ onMounted(async () => {
       </div>
     </div>
 
-    <UiBottomNav />
   </div>
 </template>
