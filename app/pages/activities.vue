@@ -13,6 +13,7 @@ const showSheet = ref(false);
 // Formulaire lecture
 const bookTitle      = ref('');
 const bookAuthor     = ref('');
+const bookVolume     = ref('');
 const bookDifficulty = ref<'easy' | 'medium' | 'hard'>('easy');
 
 const isReadingActivity = computed(
@@ -21,13 +22,6 @@ const isReadingActivity = computed(
 const canSubmitReading = computed(
   () => !isReadingActivity.value || (bookTitle.value.trim() !== '' && bookAuthor.value.trim() !== ''),
 );
-
-const canSubmitFinal = computed(() => {
-  if (isReadingActivity.value) {
-    return !!activitiesStore.selectedActivity && !!activitiesStore.duration && canSubmitReading.value;
-  }
-  return activitiesStore.canSubmit && canSubmitReading.value;
-});
 
 const difficultyOptions: { label: string; value: 'easy' | 'medium' | 'hard'; icon: string }[] = [
   { label: 'Facile',    value: 'easy',   icon: 'sentiment_satisfied' },
@@ -45,6 +39,13 @@ const quizLoading      = ref(false);
 const quizError        = ref('');
 const quizResult       = ref<{ score: number; xpGained: number; partsUnlocked: number } | null>(null);
 const chatContainer    = ref<HTMLElement | null>(null);
+
+// Synchronise l'intensité du store avec la difficulté du quiz pour les activités Lecture
+watchEffect(() => {
+  if (isReadingActivity.value) {
+    activitiesStore.intensity = ({ easy: 1, medium: 1.5, hard: 2 } as Record<string, number>)[bookDifficulty.value] ?? 1;
+  }
+});
 
 let timer: ReturnType<typeof setTimeout> | null = null;
 
@@ -81,7 +82,7 @@ function onSelect(activity: Activity | null, custom: boolean) {
 }
 
 async function submit() {
-  if (!canSubmitFinal.value) return;
+  if (!activitiesStore.canSubmit || !canSubmitReading.value) return;
 
   if (isReadingActivity.value) {
     // Pour les lectures : démarrer le quiz directement sans logger l'activité
@@ -94,6 +95,7 @@ async function submit() {
         body: {
           title:        bookTitle.value,
           author:       bookAuthor.value,
+          volume:       bookVolume.value || undefined,
           difficulty:   bookDifficulty.value,
           activityName: activitiesStore.selectedActivity!.name,
           activityId:   activitiesStore.selectedActivity!.id,
@@ -148,6 +150,13 @@ async function sendMessage() {
   } finally {
     quizLoading.value = false;
   }
+}
+
+function stripMarkdown(text: string): string {
+  return text
+    .replace(/\*\*(.+?)\*\*/gs, '$1')
+    .replace(/\*(.+?)\*/gs, '$1')
+    .replace(/_(.+?)_/gs, '$1');
 }
 
 function scrollChat() {
@@ -242,6 +251,17 @@ function closeResultAndGoHome() {
             />
           </div>
           <div class="space-y-2">
+            <p class="text-xs text-questy-gold/70 uppercase tracking-widest font-bold">
+              Tome / Volume <span class="text-questy-light/30 normal-case font-normal">(optionnel)</span>
+            </p>
+            <input
+              v-model="bookVolume"
+              type="text"
+              placeholder="Ex : Tome 2 — Les Deux Tours"
+              class="w-full bg-questy-sheet/90 border border-questy-gold/40 px-4 py-3 text-sm text-questy-light placeholder:text-questy-light/30 focus:outline-none focus:border-questy-gold"
+            />
+          </div>
+          <div class="space-y-2">
             <p class="text-xs text-questy-gold/70 uppercase tracking-widest font-bold">Difficulté du quiz</p>
             <div class="grid grid-cols-3 gap-2">
               <button
@@ -328,7 +348,7 @@ function closeResultAndGoHome() {
         <button
           class="relative w-full overflow-hidden transition-all"
           :class="activitiesStore.canSubmit ? 'active:translate-y-0.5' : 'opacity-40 cursor-not-allowed'"
-          :disabled="!canSubmitFinal || activitiesStore.loading"
+          :disabled="!activitiesStore.canSubmit || !canSubmitReading || activitiesStore.loading"
           @click="submit"
         >
           <div class="absolute inset-0 bg-gradient-to-b from-questy-gold to-[#d4af37]" />
@@ -351,10 +371,10 @@ function closeResultAndGoHome() {
       @close="showSheet = false"
     />
 
-    <!-- Modale quiz chat Gemini -->
+    <!-- Modale quiz -->
     <div
       v-if="showQuizModal"
-      class="fixed inset-0 bg-black/80 z-50 flex flex-col"
+      class="fixed inset-0 bg-black/80 z-[100] flex flex-col"
     >
       <div class="flex flex-col h-full max-w-xl mx-auto w-full">
         <!-- Header -->
@@ -385,13 +405,13 @@ function closeResultAndGoHome() {
                 ? 'bg-questy-gold/20 border border-questy-gold/40 text-questy-light'
                 : 'bg-questy-sheet/90 border border-questy-gold/20 text-questy-light'"
             >
-              {{ msg.text }}
+              {{ stripMarkdown(msg.text) }}
             </div>
           </div>
 
           <div v-if="quizLoading" class="flex justify-start">
             <div class="bg-questy-sheet/90 border border-questy-gold/20 px-4 py-3 rounded-xl text-sm text-questy-light/50 italic">
-              Gemini réfléchit...
+              L'animateur réfléchit...
             </div>
           </div>
 
