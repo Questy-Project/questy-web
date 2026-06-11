@@ -69,6 +69,24 @@ export interface ActivityLog {
   loggedAt: string;
 }
 
+export interface ChallengeCatalog {
+  id: string;
+  stat: string;
+  type: 'OBJECTIVE' | 'TIMED' | 'QUIZ_IA' | 'ENIGMA_IA';
+  title: string;
+  description: string;
+  targetSeconds: number | null;
+  weekSlot: number;
+}
+
+export interface TodayChallenge {
+  challenge: ChallengeCatalog;
+  alreadyDoneToday: boolean;
+  monthlyBonus: number;
+  atCap: boolean;
+  canAfford: boolean;
+}
+
 export interface QuizStartResponse {
   sessionId: string;
   message: string;

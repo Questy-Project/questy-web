@@ -120,13 +120,12 @@ onMounted(async () => {
             <span class="font-bold text-[#3c2f00] uppercase tracking-widest text-xs sm:text-sm">+ Activité</span>
           </div>
         </button>
-        <button
-          disabled
-          title="Bientôt disponible"
-          class="bg-questy-sheet/90 border border-questy-gold/20 text-questy-gold/30 font-bold py-3 sm:py-4 text-xs sm:text-sm uppercase tracking-widest cursor-not-allowed"
+        <NuxtLink
+          to="/challenges"
+          class="bg-questy-sheet/90 border border-questy-gold/20 text-questy-gold font-bold py-3 sm:py-4 text-xs sm:text-sm uppercase tracking-widest flex items-center justify-center"
         >
-          Jouer
-        </button>
+          ⚔️ Défis
+        </NuxtLink>
       </div>
     </div>
 
