@@ -120,6 +120,34 @@ async function submit() {
   }
 }
 
+async function sendQuickAnswer(answer: string) {
+  if (quizLoading.value) return;
+  chatMessages.value.push({ role: 'user', text: answer });
+  quizLoading.value = true;
+  await nextTick();
+  scrollChat();
+  try {
+    const res = await useApi<QuizMessageResponse>('/quiz/message', {
+      method: 'POST',
+      body: { sessionId: quizSessionId.value, message: answer },
+    });
+    chatMessages.value.push({ role: 'model', text: res.message });
+    await nextTick();
+    scrollChat();
+    if (res.type === 'score') {
+      setTimeout(() => {
+        showQuizModal.value   = false;
+        quizResult.value      = { score: res.score!, xpGained: res.xpGained!, partsUnlocked: res.partsUnlocked! };
+        showResultModal.value = true;
+      }, 1500);
+    }
+  } catch {
+    chatMessages.value.push({ role: 'model', text: 'Une erreur est survenue. Réessaie.' });
+  } finally {
+    quizLoading.value = false;
+  }
+}
+
 async function sendMessage() {
   if (!userInput.value.trim() || quizLoading.value) return;
   const msg = userInput.value.trim();
@@ -419,22 +447,54 @@ function closeResultAndGoHome() {
         </div>
 
         <!-- Input -->
-        <div class="bg-questy-sheet border-t border-questy-gold/40 px-4 py-3 flex gap-2 flex-shrink-0">
-          <input
-            v-model="userInput"
-            type="text"
-            placeholder="Ta réponse..."
-            class="flex-1 bg-questy-dark border border-questy-gold/30 px-4 py-2 text-sm text-questy-light placeholder:text-questy-light/30 focus:outline-none focus:border-questy-gold rounded-lg"
-            :disabled="quizLoading"
-            @keyup.enter="sendMessage"
-          />
-          <button
-            :disabled="quizLoading || !userInput.trim()"
-            class="px-4 py-2 bg-questy-gold/20 border border-questy-gold/40 rounded-lg text-questy-gold font-bold text-sm hover:bg-questy-gold/30 transition disabled:opacity-50"
-            @click="sendMessage"
-          >
-            <span class="material-symbols-outlined text-lg">send</span>
-          </button>
+        <div class="bg-questy-sheet border-t border-questy-gold/40 px-4 py-3 flex-shrink-0">
+          <!-- Mode facile : boutons Vrai / Faux -->
+          <div v-if="bookDifficulty === 'easy'" class="flex gap-3">
+            <button
+              v-for="choice in ['Vrai', 'Faux']"
+              :key="choice"
+              :disabled="quizLoading"
+              class="flex-1 py-3 border rounded-lg font-bold text-sm transition disabled:opacity-50"
+              :class="choice === 'Vrai'
+                ? 'bg-emerald-600/20 border-emerald-500/50 text-emerald-300 hover:bg-emerald-600/40'
+                : 'bg-red-600/20 border-red-500/50 text-red-300 hover:bg-red-600/40'"
+              @click="sendQuickAnswer(choice)"
+            >
+              {{ choice }}
+            </button>
+          </div>
+
+          <!-- Mode moyen : boutons A / B / C / D -->
+          <div v-else-if="bookDifficulty === 'medium'" class="grid grid-cols-4 gap-2">
+            <button
+              v-for="choice in ['A', 'B', 'C', 'D']"
+              :key="choice"
+              :disabled="quizLoading"
+              class="py-3 border border-questy-gold/40 rounded-lg bg-questy-gold/10 text-questy-gold font-bold text-sm hover:bg-questy-gold/25 transition disabled:opacity-50"
+              @click="sendQuickAnswer(choice)"
+            >
+              {{ choice }}
+            </button>
+          </div>
+
+          <!-- Mode difficile : saisie libre -->
+          <div v-else class="flex gap-2">
+            <input
+              v-model="userInput"
+              type="text"
+              placeholder="Ta réponse..."
+              class="flex-1 bg-questy-dark border border-questy-gold/30 px-4 py-2 text-sm text-questy-light placeholder:text-questy-light/30 focus:outline-none focus:border-questy-gold rounded-lg"
+              :disabled="quizLoading"
+              @keyup.enter="sendMessage"
+            />
+            <button
+              :disabled="quizLoading || !userInput.trim()"
+              class="px-4 py-2 bg-questy-gold/20 border border-questy-gold/40 rounded-lg text-questy-gold font-bold text-sm hover:bg-questy-gold/30 transition disabled:opacity-50"
+              @click="sendMessage"
+            >
+              <span class="material-symbols-outlined text-lg">send</span>
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -459,7 +519,7 @@ function closeResultAndGoHome() {
             <span class="text-questy-light font-bold">+{{ quizResult.xpGained }} XP Intelligence</span>
           </div>
           <div v-if="quizResult.partsUnlocked > 0" class="flex justify-center items-center gap-2 text-sm">
-            <span class="material-symbols-outlined text-questy-gold" style="font-variation-settings:'FILL' 1">favorite</span>
+            <span class="material-symbols-outlined text-red-500" style="font-variation-settings:'FILL' 1">favorite</span>
             <span class="text-questy-light font-bold">+{{ quizResult.partsUnlocked }} cœur{{ quizResult.partsUnlocked > 1 ? 's' : '' }}</span>
           </div>
         </div>
