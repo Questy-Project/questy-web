@@ -68,3 +68,16 @@ export interface ActivityLog {
   partsUnlocked: number;
   loggedAt: string;
 }
+
+export interface QuizStartResponse {
+  sessionId: string;
+  message: string;
+}
+
+export interface QuizMessageResponse {
+  type: 'message' | 'score';
+  message: string;
+  score?: number;
+  xpGained?: number;
+  partsUnlocked?: number;
+}
