@@ -3,11 +3,12 @@ const route = useRoute();
 const authStore = useAuthStore();
 
 const allTabs = [
-  { label: 'Accueil',    icon: 'home',          path: '/dashboard' },
-  { label: 'Activités',  icon: 'bolt',          path: '/activities' },
-  { label: 'Tournoi',    icon: 'emoji_events',  path: '/tournament', disabled: true },
-  { label: 'Profil',     icon: 'person',        path: '/profile' },
-  { label: 'Admin',      icon: 'shield_person', path: '/admin', adminOnly: true },
+  { label: 'Accueil',    icon: 'home',              path: '/dashboard' },
+  { label: 'Activités',  icon: 'bolt',              path: '/activities' },
+  { label: 'Défis',      icon: 'swords',            path: '/challenges' },
+  { label: 'Tournoi',    icon: 'emoji_events',      path: '/tournament', disabled: true },
+  { label: 'Profil',     icon: 'person',            path: '/profile' },
+  { label: 'Admin',      icon: 'shield_person',     path: '/admin', adminOnly: true },
 ];
 
 const tabs = computed(() =>
@@ -18,8 +19,8 @@ const tabs = computed(() =>
 <template>
   <nav class="fixed bottom-0 left-0 right-0 bg-questy-sheet border-t border-questy-gold/20 z-50">
     <div
-      class="max-w-lg mx-auto"
-      :class="tabs.length === 5 ? 'grid grid-cols-5' : 'grid grid-cols-4'"
+      class="max-w-lg mx-auto grid"
+      :class="{ 'grid-cols-4': tabs.length === 4, 'grid-cols-5': tabs.length === 5, 'grid-cols-6': tabs.length === 6 }"
     >
       <template v-for="tab in tabs" :key="tab.path">
         <NuxtLink
