@@ -99,3 +99,55 @@ export interface QuizMessageResponse {
   xpGained?: number;
   partsUnlocked?: number;
 }
+
+export interface TurnLog {
+  turn: number;
+  playerAction: string;
+  opponentAction: string;
+  playerCrit: boolean;
+  opponentCrit: boolean;
+  playerDamageDealt: number;
+  opponentDamageDealt: number;
+  playerHpAfter: number;
+  opponentHpAfter: number;
+}
+
+export interface CombatStart {
+  combatId: string;
+  userHp: number;
+  opponentHp: number;
+  opponentPseudo: string;
+  opponentStats: {
+    strength: number; agility: number; endurance: number;
+    intelligence: number; spirit: number; vitality: number; level: number;
+  };
+}
+
+export interface TurnResult {
+  turn: TurnLog;
+  playerHp: number;
+  opponentHp: number;
+  finished: boolean;
+  won: boolean | null;
+  pointsGained: number | null;
+}
+
+export interface TournamentStatus {
+  canFightToday: boolean;
+  combatsThisWeek: number;
+  combatsRemainingThisWeek: number;
+  wins: number;
+  losses: number;
+  totalPoints: number;
+}
+
+export interface WeeklyRankEntry {
+  userId: string;
+  pseudo: string;
+  weekNumber: number;
+  year: number;
+  wins: number;
+  losses: number;
+  totalPoints: number;
+  placement: number | null;
+}
