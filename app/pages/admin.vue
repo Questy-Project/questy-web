@@ -3,11 +3,15 @@ definePageMeta({ middleware: ['auth', 'admin'] });
 
 type StatKey = 'strength' | 'agility' | 'endurance' | 'intelligence' | 'spirit' | 'vitality';
 
+import type { RankTier } from '~/types';
+
 interface AdminUser {
   id: string;
   pseudo: string;
   email: string;
+  testPassword: string;
   role: 'USER' | 'ADMIN';
+  rank: { tier: RankTier; totalPoints: number };
   avatar: {
     level: number;
     xp: number;
@@ -76,6 +80,29 @@ async function resetUser(user: AdminUser) {
   if (!window.confirm(`Réinitialiser ${user.pseudo} ? Cette action remet l'avatar à zéro.`)) return;
   await useApi(`/admin/users/${user.id}/reset`, { method: 'POST' });
   await loadUsers();
+}
+
+const rankModal = ref<{ open: boolean; user: AdminUser | null }>({ open: false, user: null });
+const rankForm  = ref({ monthlyPoints: 0, weeklyPoints: null as number | null });
+const rankLoading = ref(false);
+
+function openRankModal(user: AdminUser) {
+  rankModal.value = { open: true, user };
+  rankForm.value  = { monthlyPoints: user.rank.totalPoints, weeklyPoints: null };
+}
+
+async function submitRank() {
+  if (!rankModal.value.user) return;
+  rankLoading.value = true;
+  try {
+    const body: Record<string, number> = { monthlyPoints: rankForm.value.monthlyPoints };
+    if (rankForm.value.weeklyPoints !== null) body.weeklyPoints = rankForm.value.weeklyPoints;
+    await useApi(`/admin/users/${rankModal.value.user.id}/rank`, { method: 'PATCH', body });
+    rankModal.value.open = false;
+    await loadUsers();
+  } finally {
+    rankLoading.value = false;
+  }
 }
 
 const statsModal = ref<{ open: boolean; user: AdminUser | null }>({ open: false, user: null });
@@ -203,8 +230,13 @@ async function submitStats() {
                 >{{ user.role }}</span>
               </div>
               <p class="text-xs text-questy-light/50">{{ user.email }}</p>
+              <p class="text-xs font-mono mt-0.5">
+                <span class="text-questy-light/30">mdp : </span>
+                <span class="text-green-400">{{ user.testPassword }}</span>
+              </p>
             </div>
             <div class="text-right">
+              <RankBadge :tier="user.rank.tier" :total-points="user.rank.totalPoints" size="sm" />
               <p class="text-xs text-questy-gold font-bold">{{ user.avatar?.heroClass ?? '—' }}</p>
               <p class="text-xs text-questy-light/50">Niv. {{ user.avatar?.level ?? 0 }}</p>
             </div>
@@ -214,12 +246,19 @@ async function submitStats() {
             ❤️ {{ user.parts?.stock ?? 0 }} / 12 parties
           </p>
 
-          <div class="grid grid-cols-3 gap-2">
+          <div class="grid grid-cols-4 gap-2">
             <button
               class="py-2 text-xs bg-blue-500/20 border border-blue-400/40 rounded-lg text-blue-300 font-bold hover:bg-blue-500/30 transition"
               @click="openStatsModal(user)"
             >
               📊 Stats
+            </button>
+
+            <button
+              class="py-2 text-xs bg-yellow-500/20 border border-yellow-400/40 rounded-lg text-yellow-300 font-bold hover:bg-yellow-500/30 transition"
+              @click="openRankModal(user)"
+            >
+              🏆 Rang
             </button>
 
             <div class="flex gap-1">
@@ -251,10 +290,10 @@ async function submitStats() {
     <!-- Modal stats -->
     <div
       v-if="statsModal.open"
-      class="fixed inset-0 bg-black/70 z-50 flex items-end sm:items-center justify-center p-4"
+      class="fixed inset-0 bg-black/70 z-50 flex items-end sm:items-center justify-center p-4 pb-20 sm:pb-4"
       @click.self="statsModal.open = false"
     >
-      <div class="bg-questy-sheet border border-questy-gold/40 rounded-xl p-5 w-full max-w-sm">
+      <div class="bg-questy-sheet border border-questy-gold/40 rounded-xl p-5 w-full max-w-sm overflow-y-auto max-h-[calc(100dvh-5rem)] sm:max-h-[90vh]">
         <h3
           class="text-questy-gold font-bold mb-4 text-lg"
           style="font-family: 'Newsreader', serif"
@@ -292,6 +331,55 @@ async function submitStats() {
           >
             {{ statsLoading ? '...' : 'Appliquer' }}
           </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal rang -->
+    <div
+      v-if="rankModal.open"
+      class="fixed inset-0 bg-black/70 z-50 flex items-end sm:items-center justify-center p-4 pb-20 sm:pb-4"
+      @click.self="rankModal.open = false"
+    >
+      <div class="bg-questy-sheet border border-questy-gold/40 rounded-xl p-5 w-full max-w-sm overflow-y-auto max-h-[calc(100dvh-5rem)] sm:max-h-[90vh]">
+        <h3 class="text-questy-gold font-bold mb-4 text-lg" style="font-family: 'Newsreader', serif">
+          Rang — {{ rankModal.user?.pseudo }}
+        </h3>
+
+        <div class="space-y-4">
+          <div>
+            <label class="text-xs text-questy-light/70 block mb-1">Points mensuels</label>
+            <input
+              v-model.number="rankForm.monthlyPoints"
+              type="number" min="0"
+              class="w-full text-sm text-center bg-questy-dark border border-questy-gold/30 rounded-lg text-questy-light py-2"
+            />
+            <p class="text-[10px] text-questy-light/40 mt-1 text-center">
+              ≥150 LEGEND · ≥100 GOLD · ≥50 SILVER · &lt;50 BRONZE
+            </p>
+          </div>
+          <div>
+            <label class="text-xs text-questy-light/70 block mb-1">Points classement hebdo (tournoi)</label>
+            <input
+              v-model.number="rankForm.weeklyPoints"
+              type="number" min="0"
+              placeholder="Inchangé"
+              class="w-full text-sm text-center bg-questy-dark border border-questy-gold/30 rounded-lg text-questy-light py-2 placeholder:text-questy-light/30"
+            />
+            <p class="text-[10px] text-questy-light/40 mt-1 text-center">Laisser vide pour ne pas modifier</p>
+          </div>
+        </div>
+
+        <div class="flex gap-3 mt-5">
+          <button
+            class="flex-1 py-2 text-sm border border-questy-gold/30 rounded-lg text-questy-light/60 hover:bg-questy-sheet/50"
+            @click="rankModal.open = false"
+          >Annuler</button>
+          <button
+            :disabled="rankLoading"
+            class="flex-1 py-2 text-sm bg-questy-gold/20 border border-questy-gold/40 rounded-lg text-questy-gold font-bold hover:bg-questy-gold/30 transition disabled:opacity-50"
+            @click="submitRank"
+          >{{ rankLoading ? '...' : 'Appliquer' }}</button>
         </div>
       </div>
     </div>

@@ -1,12 +1,14 @@
 <script setup lang="ts">
 import { useTournamentStore } from '~/stores/tournament';
 import { useAuthStore } from '~/stores/auth';
+import { useRankStore } from '~/stores/rank';
 import type { CombatStart } from '~/types';
 
 definePageMeta({ middleware: 'auth' });
 
 const tournamentStore = useTournamentStore();
 const authStore       = useAuthStore();
+const rankStore       = useRankStore();
 const { status, ranking, loading } = storeToRefs(tournamentStore);
 
 const combatData   = ref<CombatStart | null>(null);
@@ -14,9 +16,8 @@ const startLoading = ref(false);
 
 onMounted(async () => {
   if (!authStore.user) await authStore.fetchUser();
-  await tournamentStore.claimSlot(); // réclame le slot du jour avant le fetch du statut
-  await Promise.all([tournamentStore.fetchStatus(), tournamentStore.fetchRanking()]);
-  // Reprise d'un combat interrompu
+  await tournamentStore.claimSlot();
+  await Promise.all([tournamentStore.fetchStatus(), tournamentStore.fetchRanking(), rankStore.fetchRank()]);
   try {
     const current = await useApi<CombatStart | null>('/tournament/combat/current');
     if (current) combatData.value = current;
@@ -26,8 +27,7 @@ onMounted(async () => {
 async function startCombat() {
   startLoading.value = true;
   try {
-    combatData.value  = await useApi<CombatStart>('/tournament/combat/start', { method: 'POST' });
-    resultState.value = null;
+    combatData.value = await useApi<CombatStart>('/tournament/combat/start', { method: 'POST' });
   } catch (e: any) {
     alert(e?.data?.message ?? 'Impossible de démarrer le combat.');
   } finally {
@@ -46,9 +46,9 @@ async function handleResult() {
     class="min-h-screen text-white pb-24 flex flex-col bg-cover bg-center bg-no-repeat"
     style="background-image: linear-gradient(rgba(0,0,0,0.65), rgba(0,0,0,0.65)), url('/images/bg-tournement.png')"
   >
-    <div class="w-full max-w-lg md:max-w-3xl mx-auto px-4 py-6 flex-1 flex flex-col">
+    <div class="w-full max-w-lg md:max-w-3xl mx-auto px-4 flex-1 flex flex-col" :class="combatData ? 'py-2' : 'py-6'">
 
-      <header class="mb-6">
+      <header v-if="!combatData" class="mb-6">
         <h1 class="text-xl md:text-3xl font-bold text-questy-gold" style="font-family: 'Newsreader', serif">
           ⚔️ Tournoi hebdomadaire
         </h1>
@@ -71,6 +71,17 @@ async function handleResult() {
 
         <!-- Vue principale — centrée verticalement -->
         <div v-else class="flex-1 flex flex-col justify-center gap-4">
+
+          <!-- Rang mensuel -->
+          <div v-if="rankStore.rank" class="flex flex-col items-center gap-1">
+            <p class="text-[10px] text-gray-500 uppercase tracking-widest">Rang mensuel</p>
+            <RankBadge :tier="rankStore.rank.tier" :total-points="rankStore.rank.totalPoints" />
+            <p class="text-[11px] text-gray-500 text-center leading-snug">
+              Chaque combat rapporte des points · Victoire +30 · Défaite +10<br>
+              Le rang est calculé en fin de mois selon ta position
+            </p>
+          </div>
+
           <!-- Statut joueur -->
           <div v-if="status" class="rounded-lg bg-gray-800/60 p-4 grid grid-cols-3 gap-2 text-center text-sm">
             <div>
