@@ -8,10 +8,12 @@ const props = defineProps<{
   hairColor: number;
   heroClass: string;
   showHood?: boolean;
+  displaySize?: number; // taille d'affichage CSS en px — le canvas reste 64×64 en résolution
 }>();
 
 const canvas = ref<HTMLCanvasElement | null>(null);
 const hasRendered = ref(false);
+const px = computed(() => props.displaySize ?? 64);
 
 async function draw() {
   const el = canvas.value;
@@ -62,7 +64,7 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="relative w-16 h-16">
+  <div class="relative" :style="{ width: px + 'px', height: px + 'px' }">
 
     <!-- Loading RPG — affiché uniquement avant le premier rendu des assets -->
     <div
@@ -81,7 +83,7 @@ onMounted(async () => {
       height="64"
       class="block"
       :class="hasRendered ? 'opacity-100' : 'opacity-0'"
-      style="image-rendering: pixelated; image-rendering: crisp-edges;"
+      :style="`width: ${px}px; height: ${px}px; image-rendering: pixelated; image-rendering: crisp-edges;`"
     />
 
   </div>

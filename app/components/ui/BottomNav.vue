@@ -6,7 +6,7 @@ const allTabs = [
   { label: 'Accueil',    icon: 'home',              path: '/dashboard' },
   { label: 'Activités',  icon: 'bolt',              path: '/activities' },
   { label: 'Défis',      icon: 'swords',            path: '/challenges' },
-  { label: 'Tournoi',    icon: 'emoji_events',      path: '/tournament', disabled: true },
+  { label: 'Tournoi',    icon: 'emoji_events',      path: '/tournament' },
   { label: 'Profil',     icon: 'person',            path: '/profile' },
   { label: 'Admin',      icon: 'shield_person',     path: '/admin', adminOnly: true },
 ];
