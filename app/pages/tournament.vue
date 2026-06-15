@@ -27,11 +27,11 @@ async function startCombat() {
   }
 }
 
-async function handleResult(won: boolean, pointsGained: number) {
+async function handleResult(won: boolean, pointsGained: number, playerHp: number, opponentHp: number) {
   resultState.value = {
     show: true, won, pointsGained,
-    playerHp:   combatData.value?.userHp   ?? 0,
-    opponentHp: combatData.value?.opponentHp ?? 0,
+    playerHp,
+    opponentHp,
   };
   await Promise.all([tournamentStore.fetchStatus(), tournamentStore.fetchRanking()]);
 }

@@ -3,7 +3,7 @@ import { useApi } from '~/composables/useApi';
 import type { CombatStart, TurnLog, TurnResult } from '~/types';
 
 const props = defineProps<{ combatData: CombatStart }>();
-const emit  = defineEmits<{ result: [won: boolean, pointsGained: number]; }>();
+const emit  = defineEmits<{ result: [won: boolean, pointsGained: number, playerHp: number, opponentHp: number]; }>();
 
 const playerHp   = ref(props.combatData.userHp);
 const opponentHp = ref(props.combatData.opponentHp);
@@ -31,7 +31,7 @@ async function playTurn(action: string) {
     opponentHp.value = res.opponentHp;
     if (res.finished) {
       finished.value = true;
-      emit('result', res.won ?? false, res.pointsGained ?? 10);
+      emit('result', res.won ?? false, res.pointsGained ?? 10, res.playerHp, res.opponentHp);
     }
   } finally {
     loading.value = false;
