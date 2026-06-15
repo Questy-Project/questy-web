@@ -50,9 +50,18 @@ async function handleIAResult(success: boolean) {
   await Promise.all([challengesStore.fetchToday(), partsStore.fetchParts()]);
 }
 
-function handleAbandon() {
+async function handleAbandon(sessionId?: string | null) {
+  if (!selected.value) return;
+  try {
+    const type = selected.value.challenge.type;
+    if (type === 'OBJECTIVE' || type === 'TIMED') {
+      await useApi(`/challenges/${selected.value.challenge.id}/abandon`, { method: 'POST' });
+    } else if (sessionId) {
+      await useApi('/challenges/ia/abandon', { method: 'POST', body: { sessionId } });
+    }
+  } catch { /* défi déjà loggé ou session introuvable — on ignore */ }
   resultState.value = { show: true, success: false };
-  Promise.all([challengesStore.fetchToday(), partsStore.fetchParts()]);
+  await Promise.all([challengesStore.fetchToday(), partsStore.fetchParts()]);
 }
 </script>
 
