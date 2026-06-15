@@ -7,6 +7,7 @@ definePageMeta({ middleware: "auth" });
 const avatarStore = useAvatarStore();
 const authStore = useAuthStore();
 const activitiesStore = useActivitiesStore();
+const rankStore = useRankStore();
 
 const logsError = ref<string | null>(null);
 const editMode = ref(false);
@@ -21,12 +22,12 @@ const user = computed(() => authStore.user);
 const xpPercent = computed(() => avatarStore.xpPercent);
 
 const stats = [
-  { key: "strength" as const, label: "Force", description: "Attaque physique", color: STAT_COLOR_MAP.strength },
-  { key: "agility" as const, label: "Agilité", description: "Esquive & vitesse", color: STAT_COLOR_MAP.agility },
-  { key: "endurance" as const, label: "Endurance", description: "Résistance aux dégâts", color: STAT_COLOR_MAP.endurance },
-  { key: "intelligence" as const, label: "Intelligence", description: "Puissance magique", color: STAT_COLOR_MAP.intelligence },
-  { key: "spirit" as const, label: "Esprit", description: "Soins & soutien", color: STAT_COLOR_MAP.spirit },
-  { key: "vitality" as const, label: "Vitalité", description: "Points de vie max", color: STAT_COLOR_MAP.vitality },
+  { key: "strength" as const, label: "Force", description: "Dégâts d'attaque physique", color: STAT_COLOR_MAP.strength },
+  { key: "agility" as const, label: "Agilité", description: "Chance de critique (toutes actions)", color: STAT_COLOR_MAP.agility },
+  { key: "endurance" as const, label: "Endurance", description: "Blocage physique (contre Force)", color: STAT_COLOR_MAP.endurance },
+  { key: "intelligence" as const, label: "Intelligence", description: "Dégâts d'attaque magique", color: STAT_COLOR_MAP.intelligence },
+  { key: "spirit" as const, label: "Esprit", description: "Blocage magique (contre Intelligence)", color: STAT_COLOR_MAP.spirit },
+  { key: "vitality" as const, label: "Vitalité", description: "Points de vie max (100 + Vit×2)", color: STAT_COLOR_MAP.vitality },
 ];
 
 function startEdit() {
@@ -93,9 +94,12 @@ function logRelativeDate(dateStr: string): string {
   return `Il y a ${days} jour${days > 1 ? "s" : ""}`;
 }
 
+const { rankBorderColor, isLegend } = storeToRefs(rankStore);
+
 onMounted(async () => {
   if (!authStore.user) await authStore.fetchUser();
   if (!avatarStore.avatar) await avatarStore.fetchAvatar();
+  await rankStore.fetchRank();
   try {
     await activitiesStore.fetchRecentLogs();
   } catch {
@@ -126,7 +130,9 @@ onMounted(async () => {
       <!-- Bloc 1 : Portrait avatar -->
       <div
         v-if="avatar"
-        class="relative bg-questy-sheet/90 border border-questy-gold/40 p-5 flex flex-col items-center gap-3"
+        class="relative bg-questy-sheet/90 p-5 flex flex-col items-center gap-3 transition-all duration-500"
+        :class="{ 'rank-legend-glow': isLegend }"
+        :style="{ border: `2px solid ${rankBorderColor}` }"
       >
         <span class="absolute top-[-3px] left-[-3px] w-5 h-5 border-t-2 border-l-2 border-questy-gold" />
         <span class="absolute top-[-3px] right-[-3px] w-5 h-5 border-t-2 border-r-2 border-questy-gold" />
@@ -362,3 +368,13 @@ onMounted(async () => {
 
   </div>
 </template>
+
+<style scoped>
+@keyframes legend-border-pulse {
+  0%, 100% { box-shadow: 0 0 10px #FFB80055, 0 0 20px #FFB80022; }
+  50%       { box-shadow: 0 0 20px #FFB800AA, 0 0 40px #FFB80044; }
+}
+.rank-legend-glow {
+  animation: legend-border-pulse 1.8s ease-in-out infinite;
+}
+</style>
