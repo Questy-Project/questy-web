@@ -24,5 +24,11 @@ export const useTournamentStore = defineStore('tournament', () => {
     ranking.value = await useApi<WeeklyRankEntry[]>('/tournament/ranking');
   }
 
-  return { status, ranking, loading, error, fetchStatus, fetchRanking };
+  async function claimSlot() {
+    try {
+      await useApi('/tournament/claim-slot', { method: 'POST' });
+    } catch { /* slot déjà réclamé aujourd'hui ou erreur réseau — silencieux */ }
+  }
+
+  return { status, ranking, loading, error, fetchStatus, fetchRanking, claimSlot };
 });

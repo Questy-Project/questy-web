@@ -138,7 +138,7 @@ export interface TurnResult {
 export interface TournamentStatus {
   canFightToday: boolean;
   combatsThisWeek: number;
-  combatsRemainingThisWeek: number;
+  claimedSlots: number;
   wins: number;
   losses: number;
   totalPoints: number;

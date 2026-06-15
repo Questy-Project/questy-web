@@ -12,6 +12,7 @@ const resultState  = ref<{ show: boolean; won: boolean; pointsGained: number; pl
 const startLoading = ref(false);
 
 onMounted(async () => {
+  await tournamentStore.claimSlot(); // réclame le slot du jour avant le fetch du statut
   await Promise.all([tournamentStore.fetchStatus(), tournamentStore.fetchRanking()]);
   // Reprise d'un combat interrompu
   try {
@@ -105,7 +106,8 @@ function closeResult() {
           </div>
 
           <p v-if="status" class="text-xs text-center text-gray-500 mb-4">
-            {{ status.combatsRemainingThisWeek }} combat(s) restant(s) cette semaine
+            {{ status.claimedSlots - status.combatsThisWeek }} unité(s) disponible(s)
+            · {{ status.combatsThisWeek }}/{{ status.claimedSlots }} effectué(s) cette semaine
           </p>
 
           <!-- Bouton combat -->
@@ -115,7 +117,10 @@ function closeResult() {
             :disabled="!status?.canFightToday || startLoading"
             @click="startCombat"
           >
-            {{ startLoading ? '⏳ Recherche d\'un adversaire...' : status?.canFightToday ? '⚔️ Combattre aujourd\'hui' : '✅ Combat du jour effectué' }}
+            {{ startLoading ? '⏳ Recherche d\'un adversaire...'
+              : !status?.claimedSlots ? '🔒 Reviens demain pour gagner un combat'
+              : status?.canFightToday ? '⚔️ Combattre'
+              : '✅ Combat du jour effectué' }}
           </UiRpgButton>
 
           <!-- Classement -->
