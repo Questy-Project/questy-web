@@ -1,17 +1,19 @@
 <script setup lang="ts">
 import { useTournamentStore } from '~/stores/tournament';
+import { useAuthStore } from '~/stores/auth';
 import type { CombatStart } from '~/types';
 
 definePageMeta({ middleware: 'auth' });
 
 const tournamentStore = useTournamentStore();
+const authStore       = useAuthStore();
 const { status, ranking, loading } = storeToRefs(tournamentStore);
 
 const combatData   = ref<CombatStart | null>(null);
-const resultState  = ref<{ show: boolean; won: boolean; pointsGained: number; playerHp: number; opponentHp: number } | null>(null);
 const startLoading = ref(false);
 
 onMounted(async () => {
+  if (!authStore.user) await authStore.fetchUser();
   await tournamentStore.claimSlot(); // réclame le slot du jour avant le fetch du statut
   await Promise.all([tournamentStore.fetchStatus(), tournamentStore.fetchRanking()]);
   // Reprise d'un combat interrompu
@@ -33,25 +35,16 @@ async function startCombat() {
   }
 }
 
-async function handleResult(won: boolean, pointsGained: number, playerHp: number, opponentHp: number) {
-  resultState.value = {
-    show: true, won, pointsGained,
-    playerHp,
-    opponentHp,
-  };
+async function handleResult() {
+  combatData.value = null; // retour à la vue principale
   await Promise.all([tournamentStore.fetchStatus(), tournamentStore.fetchRanking()]);
-}
-
-function closeResult() {
-  combatData.value  = null;
-  resultState.value = null;
 }
 </script>
 
 <template>
   <div
     class="min-h-screen text-white pb-24 flex flex-col bg-cover bg-center bg-no-repeat"
-    style="background-image: linear-gradient(rgba(0,0,0,0.65), rgba(0,0,0,0.65)), url('/images/bg-challenge.png')"
+    style="background-image: linear-gradient(rgba(0,0,0,0.65), rgba(0,0,0,0.65)), url('/images/bg-tournement.png')"
   >
     <div class="w-full max-w-lg md:max-w-3xl mx-auto px-4 py-6 flex-1 flex flex-col">
 
@@ -68,29 +61,18 @@ function closeResult() {
 
       <template v-else>
 
-        <!-- Vue combat en cours -->
-        <template v-if="combatData && !resultState?.show">
-          <p class="text-sm text-gray-400 mb-3">Adversaire : <strong class="text-white">{{ combatData.opponentPseudo }}</strong></p>
+        <!-- Vue combat en cours — occupe tout l'espace vertical disponible -->
+        <div v-if="combatData" class="flex-1 flex flex-col min-h-0">
           <p v-if="combatData.turnsPlayed" class="text-xs text-questy-gold/60 mb-2">
             ↩️ Combat repris — tour {{ combatData.turnsPlayed + 1 }} / 10
           </p>
-          <TournamentCombat :combat-data="combatData" @result="handleResult" />
-        </template>
+          <TournamentCombat :combat-data="combatData" class="flex-1 min-h-0" @result="handleResult" />
+        </div>
 
-        <!-- Vue résultat -->
-        <TournamentResult
-          v-else-if="resultState?.show"
-          :won="resultState.won"
-          :points-gained="resultState.pointsGained"
-          :player-hp="resultState.playerHp"
-          :opponent-hp="resultState.opponentHp"
-          @close="closeResult"
-        />
-
-        <!-- Vue principale -->
-        <template v-else>
+        <!-- Vue principale — centrée verticalement -->
+        <div v-else class="flex-1 flex flex-col justify-center gap-4">
           <!-- Statut joueur -->
-          <div v-if="status" class="rounded-lg bg-gray-800/60 p-4 mb-4 grid grid-cols-3 gap-2 text-center text-sm">
+          <div v-if="status" class="rounded-lg bg-gray-800/60 p-4 grid grid-cols-3 gap-2 text-center text-sm">
             <div>
               <p class="text-questy-gold font-bold text-lg">{{ status.wins }}</p>
               <p class="text-gray-400 text-xs">Victoires</p>
@@ -105,7 +87,7 @@ function closeResult() {
             </div>
           </div>
 
-          <p v-if="status" class="text-xs text-center text-gray-500 mb-4">
+          <p v-if="status" class="text-xs text-center text-gray-500">
             {{ status.claimedSlots - status.combatsThisWeek }} unité(s) disponible(s)
             · {{ status.combatsThisWeek }}/{{ status.claimedSlots }} effectué(s) cette semaine
           </p>
@@ -113,7 +95,7 @@ function closeResult() {
           <!-- Bouton combat -->
           <UiRpgButton
             color="#c9a84c"
-            class="w-full mb-6"
+            class="w-full"
             :disabled="!status?.canFightToday || startLoading"
             @click="startCombat"
           >
@@ -125,7 +107,7 @@ function closeResult() {
 
           <!-- Classement -->
           <TournamentRanking :ranking="ranking" />
-        </template>
+        </div>
 
       </template>
     </div>

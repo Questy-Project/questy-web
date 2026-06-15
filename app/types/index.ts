@@ -124,6 +124,14 @@ export interface CombatStart {
     strength: number; agility: number; endurance: number;
     intelligence: number; spirit: number; vitality: number; level: number;
   } | null;
+  opponentAvatar: {
+    silhouette: string;
+    skinTone: number;
+    hairStyle: number;
+    hairColor: number;
+    heroClass: string;
+    showHood: boolean;
+  } | null;
 }
 
 export interface TurnResult {
