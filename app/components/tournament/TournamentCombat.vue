@@ -5,8 +5,8 @@ import type { CombatStart, TurnLog, TurnResult } from '~/types';
 const props = defineProps<{ combatData: CombatStart }>();
 const emit  = defineEmits<{ result: [won: boolean, pointsGained: number, playerHp: number, opponentHp: number]; }>();
 
-const playerHp   = ref(props.combatData.userHp);
-const opponentHp = ref(props.combatData.opponentHp);
+const playerHp   = ref(props.combatData.userHpCurrent ?? props.combatData.userHp);
+const opponentHp = ref(props.combatData.opponentHpCurrent ?? props.combatData.opponentHp);
 const turnLogs   = ref<TurnLog[]>([]);
 const loading    = ref(false);
 const finished   = ref(false);

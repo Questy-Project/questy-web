@@ -13,6 +13,11 @@ const startLoading = ref(false);
 
 onMounted(async () => {
   await Promise.all([tournamentStore.fetchStatus(), tournamentStore.fetchRanking()]);
+  // Reprise d'un combat interrompu
+  try {
+    const current = await useApi<CombatStart | null>('/tournament/combat/current');
+    if (current) combatData.value = current;
+  } catch { /* aucun combat en cours */ }
 });
 
 async function startCombat() {
@@ -65,6 +70,9 @@ function closeResult() {
         <!-- Vue combat en cours -->
         <template v-if="combatData && !resultState?.show">
           <p class="text-sm text-gray-400 mb-3">Adversaire : <strong class="text-white">{{ combatData.opponentPseudo }}</strong></p>
+          <p v-if="combatData.turnsPlayed" class="text-xs text-questy-gold/60 mb-2">
+            ↩️ Combat repris — tour {{ combatData.turnsPlayed + 1 }} / 10
+          </p>
           <TournamentCombat :combat-data="combatData" @result="handleResult" />
         </template>
 

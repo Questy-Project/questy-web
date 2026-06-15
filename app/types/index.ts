@@ -116,11 +116,14 @@ export interface CombatStart {
   combatId: string;
   userHp: number;
   opponentHp: number;
+  userHpCurrent?: number;     // présent si reprise d'un combat en cours
+  opponentHpCurrent?: number; // présent si reprise d'un combat en cours
+  turnsPlayed?: number;       // nombre de tours déjà joués (reprise)
   opponentPseudo: string;
   opponentStats: {
     strength: number; agility: number; endurance: number;
     intelligence: number; spirit: number; vitality: number; level: number;
-  };
+  } | null;
 }
 
 export interface TurnResult {
