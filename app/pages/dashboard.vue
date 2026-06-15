@@ -4,20 +4,23 @@ import { STAT_COLOR_MAP } from "~/constants/heroClasses";
 definePageMeta({ middleware: "auth" });
 
 const avatarStore = useAvatarStore();
-const partsStore = usePartsStore();
+const partsStore  = usePartsStore();
+const rankStore   = useRankStore();
 
 const loading = computed(() => avatarStore.loading || partsStore.loading);
-const error = computed(() => avatarStore.error || partsStore.error);
+const error   = computed(() => avatarStore.error   || partsStore.error);
 
-const avatar = computed(() => avatarStore.avatar);
-const maxStat = computed(() => avatarStore.maxStat);
+const avatar   = computed(() => avatarStore.avatar);
+const maxStat  = computed(() => avatarStore.maxStat);
 const xpPercent = computed(() => avatarStore.xpPercent);
 
 const authStore = useAuthStore();
 
+const { rankBorderColor, isLegend } = storeToRefs(rankStore);
+
 onMounted(async () => {
   if (!authStore.user) await authStore.fetchUser();
-  await Promise.all([avatarStore.fetchAvatar(), partsStore.fetchParts()]);
+  await Promise.all([avatarStore.fetchAvatar(), partsStore.fetchParts(), rankStore.fetchRank()]);
 });
 </script>
 
@@ -77,7 +80,11 @@ onMounted(async () => {
       <div class="flex-1 flex flex-col items-center justify-center py-6 sm:py-8 px-4 sm:px-8 gap-6">
 
         <!-- Portrait avatar encadré (grand) -->
-        <div class="relative bg-questy-sheet/90 border border-questy-gold/40 p-4 flex flex-col items-center gap-2">
+        <div
+          class="relative bg-questy-sheet/90 p-4 flex flex-col items-center gap-2 transition-all duration-500"
+          :class="{ 'rank-legend-glow': isLegend }"
+          :style="{ border: `2px solid ${rankBorderColor}` }"
+        >
           <span class="absolute top-[-3px] left-[-3px] w-5 h-5 border-t-2 border-l-2 border-questy-gold" />
           <span class="absolute top-[-3px] right-[-3px] w-5 h-5 border-t-2 border-r-2 border-questy-gold" />
           <span class="absolute bottom-[-3px] left-[-3px] w-5 h-5 border-b-2 border-l-2 border-questy-gold" />
@@ -131,3 +138,13 @@ onMounted(async () => {
 
   </div>
 </template>
+
+<style scoped>
+@keyframes legend-border-pulse {
+  0%, 100% { box-shadow: 0 0 10px #FFB80055, 0 0 20px #FFB80022; }
+  50%       { box-shadow: 0 0 20px #FFB800AA, 0 0 40px #FFB80044; }
+}
+.rank-legend-glow {
+  animation: legend-border-pulse 1.8s ease-in-out infinite;
+}
+</style>
