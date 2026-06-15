@@ -3,7 +3,7 @@ import type { TodayChallenge } from '~/types';
 import { useApi } from '~/composables/useApi';
 
 const props = defineProps<{ item: TodayChallenge; color: string }>();
-const emit  = defineEmits<{ result: [success: boolean]; abandon: [] }>();
+const emit  = defineEmits<{ result: [success: boolean]; abandon: [sessionId: string | null] }>();
 
 const messages  = ref<{ role: string; content: string }[]>([]);
 const sessionId = ref<string | null>(null);
@@ -148,7 +148,7 @@ async function sendAnswer(answer: string) {
         </div>
       </template>
 
-      <button class="text-sm text-gray-500 hover:text-gray-300 transition-colors" :disabled="loading" @click="emit('abandon')">🏳️ Abandonner</button>
+      <button class="text-sm text-gray-500 hover:text-gray-300 transition-colors" :disabled="loading" @click="emit('abandon', sessionId)">🏳️ Abandonner</button>
     </template>
   </div>
 </template>
