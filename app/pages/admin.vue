@@ -9,7 +9,6 @@ interface AdminUser {
   id: string;
   pseudo: string;
   email: string;
-  testPassword: string;
   role: 'USER' | 'ADMIN';
   rank: { tier: RankTier; totalPoints: number };
   avatar: {
@@ -26,18 +25,64 @@ interface AdminUser {
   parts: { stock: number } | null;
 }
 
+const authStore = useAuthStore();
+
 const users = ref<AdminUser[]>([]);
 const loadingUsers = ref(false);
+const usersError = ref('');
+const currentPage = ref(1);
+const totalUsers = ref(0);
+const PAGE_LIMIT = 10;
+const search = ref('');
 
-async function loadUsers() {
+const totalPages = computed(() => Math.ceil(totalUsers.value / PAGE_LIMIT));
+
+async function loadUsers(page = currentPage.value) {
   loadingUsers.value = true;
+  usersError.value = '';
   try {
-    users.value = await useApi<AdminUser[]>('/admin/users');
+    const query: Record<string, unknown> = { page, limit: PAGE_LIMIT };
+    if (search.value.trim()) query.search = search.value.trim();
+    const res = await useApi<{ data: AdminUser[]; total: number; page: number; limit: number }>(
+      '/admin/users',
+      { query },
+    );
+    users.value = res.data;
+    totalUsers.value = res.total;
+    currentPage.value = page;
     users.value.forEach(u => {
       partsEdit.value[u.id] = u.parts?.stock ?? 0;
     });
+  } catch {
+    usersError.value = 'Impossible de charger les utilisateurs.';
   } finally {
     loadingUsers.value = false;
+  }
+}
+
+let searchTimer: ReturnType<typeof setTimeout> | null = null;
+watch(search, () => {
+  if (searchTimer) clearTimeout(searchTimer);
+  searchTimer = setTimeout(() => loadUsers(1), 350);
+});
+
+async function goToMyAccount() {
+  const myId = authStore.user?.id;
+  if (!myId) return;
+
+  if (users.value.some(u => u.id === myId)) {
+    await nextTick();
+    document.getElementById(`user-${myId}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    return;
+  }
+
+  for (let p = 1; p <= totalPages.value; p++) {
+    await loadUsers(p);
+    if (users.value.some(u => u.id === myId)) {
+      await nextTick();
+      document.getElementById(`user-${myId}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return;
+    }
   }
 }
 
@@ -71,6 +116,8 @@ async function submitParts(userId: string) {
       body: { stock: partsEdit.value[userId] },
     });
     await loadUsers();
+  } catch {
+    alert('Erreur lors de la modification des parties.');
   } finally {
     partsLoading.value[userId] = false;
   }
@@ -78,8 +125,12 @@ async function submitParts(userId: string) {
 
 async function resetUser(user: AdminUser) {
   if (!window.confirm(`Réinitialiser ${user.pseudo} ? Cette action remet l'avatar à zéro.`)) return;
-  await useApi(`/admin/users/${user.id}/reset`, { method: 'POST' });
-  await loadUsers();
+  try {
+    await useApi(`/admin/users/${user.id}/reset`, { method: 'POST' });
+    await loadUsers();
+  } catch {
+    alert('Erreur lors de la réinitialisation.');
+  }
 }
 
 const rankModal = ref<{ open: boolean; user: AdminUser | null }>({ open: false, user: null });
@@ -100,6 +151,8 @@ async function submitRank() {
     await useApi(`/admin/users/${rankModal.value.user.id}/rank`, { method: 'PATCH', body });
     rankModal.value.open = false;
     await loadUsers();
+  } catch {
+    alert('Erreur lors de la modification du rang.');
   } finally {
     rankLoading.value = false;
   }
@@ -153,6 +206,8 @@ async function submitStats() {
     });
     statsModal.value.open = false;
     await loadUsers();
+  } catch {
+    alert('Erreur lors de la modification des stats.');
   } finally {
     statsLoading.value = false;
   }
@@ -165,10 +220,11 @@ async function submitStats() {
     style="background-image: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), url('/images/bg-tavern.jpg')"
   >
     <h1
-      class="text-2xl font-bold text-questy-gold mb-6"
+      class="text-3xl sm:text-4xl lg:text-5xl font-bold italic text-questy-gold flex items-end gap-2 mb-6"
       style="font-family: 'Newsreader', serif"
     >
-      ⚔️ Administration
+      <img src="/images/icons/icon-admin.png" alt="" class="w-12 h-12 sm:w-14 sm:h-14 lg:w-16 lg:h-16 object-contain" />
+      Administration
     </h1>
 
     <!-- Section Crons -->
@@ -206,17 +262,41 @@ async function submitStats() {
 
     <!-- Section Utilisateurs -->
     <section>
-      <h2 class="text-xs font-bold text-questy-gold mb-4 uppercase tracking-wider">Utilisateurs</h2>
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-xs font-bold text-questy-gold uppercase tracking-wider">Utilisateurs</h2>
+        <button
+          class="text-xs px-3 py-1.5 bg-questy-gold/20 border border-questy-gold/40 rounded-lg text-questy-gold font-bold hover:bg-questy-gold/30 transition"
+          @click="goToMyAccount"
+        >
+          🎯 Mon compte
+        </button>
+      </div>
+
+      <div class="relative mb-4">
+        <span class="absolute left-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-base text-questy-light/40 pointer-events-none">search</span>
+        <input
+          v-model="search"
+          type="text"
+          placeholder="Rechercher par pseudo ou email…"
+          class="w-full pl-9 pr-4 py-2 text-sm bg-questy-dark border border-questy-gold/30 rounded-lg text-questy-light placeholder:text-questy-light/30 focus:outline-none focus:border-questy-gold/60"
+        />
+      </div>
 
       <div v-if="loadingUsers" class="text-center text-questy-light/50 py-8 text-sm">
         Chargement...
       </div>
 
+      <p v-else-if="usersError" class="text-center text-red-400 text-sm py-4">{{ usersError }}</p>
+
       <div v-else class="space-y-4">
         <div
           v-for="user in users"
+          :id="`user-${user.id}`"
           :key="user.id"
-          class="bg-questy-sheet/90 border border-questy-gold/40 rounded-xl p-4"
+          class="bg-questy-sheet/90 rounded-xl p-4 transition-all"
+          :class="user.id === authStore.user?.id
+            ? 'border-2 border-questy-gold ring-2 ring-questy-gold/30'
+            : 'border border-questy-gold/40'"
         >
           <div class="flex justify-between items-start mb-2">
             <div>
@@ -230,11 +310,7 @@ async function submitStats() {
                 >{{ user.role }}</span>
               </div>
               <p class="text-xs text-questy-light/50">{{ user.email }}</p>
-              <p class="text-xs font-mono mt-0.5">
-                <span class="text-questy-light/30">mdp : </span>
-                <span class="text-green-400">{{ user.testPassword }}</span>
-              </p>
-            </div>
+                    </div>
             <div class="text-right">
               <RankBadge :tier="user.rank.tier" :total-points="user.rank.totalPoints" size="sm" />
               <p class="text-xs text-questy-gold font-bold">{{ user.avatar?.heroClass ?? '—' }}</p>
@@ -248,7 +324,7 @@ async function submitStats() {
 
           <div class="grid grid-cols-4 gap-2">
             <button
-              class="py-2 text-xs bg-blue-500/20 border border-blue-400/40 rounded-lg text-blue-300 font-bold hover:bg-blue-500/30 transition"
+              class="py-2 text-xs bg-questy-gold/10 border border-questy-gold/30 rounded-lg text-questy-gold font-bold hover:bg-questy-gold/20 transition"
               @click="openStatsModal(user)"
             >
               📊 Stats
@@ -284,6 +360,21 @@ async function submitStats() {
             </button>
           </div>
         </div>
+      </div>
+
+      <!-- Pagination -->
+      <div v-if="totalPages > 1" class="flex items-center justify-center gap-4 mt-4">
+        <button
+          :disabled="currentPage <= 1"
+          class="px-4 py-2 text-xs bg-questy-gold/20 border border-questy-gold/40 rounded-lg text-questy-gold font-bold disabled:opacity-30"
+          @click="loadUsers(currentPage - 1)"
+        >← Préc.</button>
+        <span class="text-xs text-questy-light/50">{{ currentPage }} / {{ totalPages }}</span>
+        <button
+          :disabled="currentPage >= totalPages"
+          class="px-4 py-2 text-xs bg-questy-gold/20 border border-questy-gold/40 rounded-lg text-questy-gold font-bold disabled:opacity-30"
+          @click="loadUsers(currentPage + 1)"
+        >Suiv. →</button>
       </div>
     </section>
 

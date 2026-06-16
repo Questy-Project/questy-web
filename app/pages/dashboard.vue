@@ -43,32 +43,35 @@ onMounted(async () => {
     <div v-else-if="avatar" class="flex-1 flex flex-col w-full">
 
       <!-- HAUT : Header + XP -->
-      <div class="max-w-xl mx-auto w-full px-4 sm:px-8 pt-6 sm:pt-10 space-y-4">
+      <div class="w-full px-4 sm:px-8 lg:px-16 pt-6 sm:pt-8 space-y-4 max-w-5xl lg:max-w-none">
         <header class="border-b border-questy-gold/20 pb-4">
           <h1
-            class="text-2xl sm:text-3xl font-bold italic text-questy-gold text-center"
+            class="text-3xl sm:text-4xl lg:text-5xl font-bold italic text-questy-gold flex items-end gap-2"
             style="font-family: 'Newsreader', serif"
           >
+            <img src="/images/icons/icon-acceuil.png" alt="" class="w-12 h-12 sm:w-14 sm:h-14 lg:w-16 lg:h-16 object-contain" />
             Auberge
           </h1>
         </header>
 
         <!-- Classe + XP -->
-        <div class="relative bg-questy-sheet/90 border border-questy-gold/40 p-4">
+        <div class="relative bg-questy-sheet/90 border border-questy-gold/40 p-3 lg:p-4">
           <span class="absolute top-[-3px] left-[-3px] w-5 h-5 border-t-2 border-l-2 border-questy-gold" />
           <span class="absolute top-[-3px] right-[-3px] w-5 h-5 border-t-2 border-r-2 border-questy-gold" />
           <span class="absolute bottom-[-3px] left-[-3px] w-5 h-5 border-b-2 border-l-2 border-questy-gold" />
           <span class="absolute bottom-[-3px] right-[-3px] w-5 h-5 border-b-2 border-r-2 border-questy-gold" />
           <div class="flex items-center gap-3">
             <AvatarHeroClass :hero-class="avatar.heroClass" />
-            <span class="text-xs text-questy-light/60">Niv. {{ avatar.level }}</span>
-            <div class="flex-1 bg-questy-dark rounded-full h-1.5">
+            <span class="text-xs lg:text-sm text-questy-light/60">Niv. {{ avatar.level }}</span>
+            <div class="flex-1 relative bg-questy-dark rounded-full h-2 lg:h-2.5 overflow-hidden" style="box-shadow: inset 0 1px 3px rgba(0,0,0,0.6);">
               <div
-                class="h-full rounded-full bg-questy-purple transition-all duration-500"
-                :style="{ width: `${xpPercent}%` }"
-              />
+                class="h-full rounded-full transition-all duration-500 relative overflow-hidden"
+                :style="{ width: `${xpPercent}%`, background: 'linear-gradient(90deg, #7c3aed99, #7c3aed)' }"
+              >
+                <div class="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/25 to-transparent rounded-full" />
+              </div>
             </div>
-            <span class="text-xs text-questy-gold">{{ xpPercent }}%</span>
+            <span class="text-xs lg:text-sm text-questy-gold font-bold">{{ xpPercent }}%</span>
           </div>
         </div>
 
@@ -76,12 +79,19 @@ onMounted(async () => {
         <PartsDisplay :stock="partsStore.stock" />
       </div>
 
-      <!-- MILIEU : Portrait centré + Stats 2×3 -->
-      <div class="flex-1 flex flex-col items-center justify-center py-6 sm:py-8 px-4 sm:px-8 gap-6">
+      <!-- MILIEU : Layout 3 colonnes desktop / portrait + stats mobile -->
+      <div class="flex-1 flex flex-col lg:flex-row items-center justify-center py-6 sm:py-8 px-4 sm:px-8 lg:px-16 gap-6 lg:gap-10 xl:gap-16">
 
-        <!-- Portrait avatar encadré (grand) -->
+        <!-- Stats gauche (Force, Agilité, Endurance) — desktop uniquement -->
+        <div class="hidden lg:flex flex-col justify-center gap-6 xl:gap-8 w-56 xl:w-72 shrink-0">
+          <AvatarStatBar large align="right" label="Force"     :value="avatar.strength"  :max-value="100" :color="STAT_COLOR_MAP.strength" />
+          <AvatarStatBar large align="right" label="Agilité"   :value="avatar.agility"   :max-value="100" :color="STAT_COLOR_MAP.agility" />
+          <AvatarStatBar large align="right" label="Endurance" :value="avatar.endurance" :max-value="100" :color="STAT_COLOR_MAP.endurance" />
+        </div>
+
+        <!-- Portrait avatar encadré -->
         <div
-          class="relative bg-questy-sheet/90 p-4 flex flex-col items-center gap-2 transition-all duration-500"
+          class="relative bg-questy-sheet/90 p-4 flex flex-col items-center gap-2 transition-all duration-500 shrink-0"
           :class="{ 'rank-legend-glow': isLegend }"
           :style="{ border: `2px solid ${rankBorderColor}` }"
         >
@@ -89,8 +99,8 @@ onMounted(async () => {
           <span class="absolute top-[-3px] right-[-3px] w-5 h-5 border-t-2 border-r-2 border-questy-gold" />
           <span class="absolute bottom-[-3px] left-[-3px] w-5 h-5 border-b-2 border-l-2 border-questy-gold" />
           <span class="absolute bottom-[-3px] right-[-3px] w-5 h-5 border-b-2 border-r-2 border-questy-gold" />
-          <div class="text-[9px] text-questy-gold/50 uppercase tracking-widest font-bold">{{ authStore.user?.pseudo }}</div>
-          <div class="w-48 h-48 flex items-center justify-center">
+          <div class="text-[9px] lg:text-[11px] text-questy-gold/50 uppercase tracking-widest font-bold">{{ authStore.user?.pseudo }}</div>
+          <div class="w-48 h-48 lg:w-56 lg:h-56 xl:w-64 xl:h-64 flex items-center justify-center">
             <div class="scale-[3]">
               <AvatarCanvas
                 :silhouette="avatar.silhouette"
@@ -104,8 +114,15 @@ onMounted(async () => {
           </div>
         </div>
 
-        <!-- Stats 2 colonnes × 3 lignes -->
-        <div class="w-full max-w-xs sm:max-w-sm grid grid-cols-2 gap-3">
+        <!-- Stats droite (Intelligence, Esprit, Vitalité) — desktop uniquement -->
+        <div class="hidden lg:flex flex-col justify-center gap-6 xl:gap-8 w-56 xl:w-72 shrink-0">
+          <AvatarStatBar large label="Intelligence" :value="avatar.intelligence" :max-value="100" :color="STAT_COLOR_MAP.intelligence" />
+          <AvatarStatBar large label="Esprit"       :value="avatar.spirit"       :max-value="100" :color="STAT_COLOR_MAP.spirit" />
+          <AvatarStatBar large label="Vitalité"     :value="avatar.vitality"     :max-value="100" :color="STAT_COLOR_MAP.vitality" />
+        </div>
+
+        <!-- Stats mobile — grille 2 colonnes sous le portrait -->
+        <div class="lg:hidden w-full max-w-xs sm:max-w-sm grid grid-cols-2 gap-3">
           <AvatarStatBar large label="Force"     :value="avatar.strength"     :max-value="100" :color="STAT_COLOR_MAP.strength" />
           <AvatarStatBar large label="Intel."    :value="avatar.intelligence" :max-value="100" :color="STAT_COLOR_MAP.intelligence" />
           <AvatarStatBar large label="Agilité"   :value="avatar.agility"      :max-value="100" :color="STAT_COLOR_MAP.agility" />
@@ -117,21 +134,23 @@ onMounted(async () => {
       </div>
 
       <!-- BAS : CTAs -->
-      <div class="max-w-xl mx-auto w-full px-4 sm:px-8 pb-6 sm:pb-10 grid grid-cols-2 gap-3 sm:gap-4">
+      <div class="w-full px-4 sm:px-8 lg:px-16 pb-6 sm:pb-10 grid grid-cols-2 gap-3 sm:gap-4 lg:gap-6">
         <button
           class="relative overflow-hidden active:translate-y-0.5 transition-transform"
           @click="navigateTo('/activities')"
         >
           <div class="absolute inset-0 bg-gradient-to-b from-questy-gold to-[#d4af37]" />
-          <div class="relative px-4 py-3 sm:py-4 flex items-center justify-center gap-2 border-b-4 border-[#554300]/40">
-            <span class="font-bold text-[#3c2f00] uppercase tracking-widest text-xs sm:text-sm">+ Activité</span>
+          <div class="relative px-4 py-3 sm:py-4 lg:py-5 flex items-center justify-center gap-2 lg:gap-3 border-b-4 border-[#554300]/40">
+            <img src="/images/icons/icon-activities.png" alt="Activités" class="w-6 h-6 lg:w-8 lg:h-8 object-contain" />
+            <span class="font-bold text-[#3c2f00] uppercase tracking-widest text-xs sm:text-sm lg:text-base">Activité</span>
           </div>
         </button>
         <NuxtLink
           to="/challenges"
-          class="bg-questy-sheet/90 border border-questy-gold/20 text-questy-gold font-bold py-3 sm:py-4 text-xs sm:text-sm uppercase tracking-widest flex items-center justify-center"
+          class="bg-questy-sheet/90 border border-questy-gold/20 text-questy-gold font-bold text-xs sm:text-sm lg:text-base uppercase tracking-widest flex items-center justify-center gap-2 lg:gap-3 py-3 sm:py-4 lg:py-5"
         >
-          ⚔️ Défis
+          <img src="/images/icons/icon-challenge.png" alt="Défis" class="w-6 h-6 lg:w-8 lg:h-8 object-contain" />
+          Défis
         </NuxtLink>
       </div>
     </div>

@@ -111,15 +111,22 @@ onMounted(async () => {
 <template>
   <div
     class="min-h-screen bg-questy-dark text-questy-light pb-24 bg-cover bg-center bg-no-repeat"
+    :class="showAvatarEditor ? 'flex items-center justify-center' : ''"
     style="font-family: 'Be Vietnam Pro', sans-serif; background-image: linear-gradient(rgba(0,0,0,0.50), rgba(0,0,0,0.50)), url('/images/bg-library.jpg')"
   >
-    <div class="max-w-xl mx-auto w-full px-4 sm:px-8 py-6 sm:py-10 space-y-5 sm:space-y-6">
+    <div
+      class="w-full"
+      :class="showAvatarEditor
+        ? 'max-w-sm px-4'
+        : 'max-w-xl lg:max-w-2xl mx-auto px-4 sm:px-8 lg:px-10 py-6 sm:py-10 space-y-5 sm:space-y-6'"
+    >
       <!-- Header -->
-      <header class="border-b border-questy-gold/20 pb-4">
+      <header v-if="!showAvatarEditor" class="border-b border-questy-gold/20 pb-4">
         <h1
-          class="text-3xl sm:text-4xl font-bold italic text-questy-gold"
+          class="text-3xl sm:text-4xl lg:text-5xl font-bold italic text-questy-gold flex items-end gap-2"
           style="font-family: 'Newsreader', serif"
         >
+          <img src="/images/icons/icon-profil.png" alt="" class="w-12 h-12 sm:w-14 sm:h-14 lg:w-16 lg:h-16 object-contain" />
           Mon Profil
         </h1>
         <p class="text-xs sm:text-sm text-questy-light/50 uppercase tracking-widest mt-1">
@@ -202,7 +209,7 @@ onMounted(async () => {
 
       <!-- Bloc 2 : Stats -->
       <div
-        v-if="avatar"
+        v-if="avatar && !showAvatarEditor"
         class="relative bg-questy-sheet/90 border border-questy-gold/40 p-4"
       >
         <span class="absolute top-[-3px] left-[-3px] w-5 h-5 border-t-2 border-l-2 border-questy-gold" />
@@ -232,7 +239,7 @@ onMounted(async () => {
       </div>
 
       <!-- Bloc 3 : Historique -->
-      <div class="relative bg-questy-sheet/90 border border-questy-gold/40 p-4">
+      <div v-if="!showAvatarEditor" class="relative bg-questy-sheet/90 border border-questy-gold/40 p-4">
         <span class="absolute top-[-3px] left-[-3px] w-5 h-5 border-t-2 border-l-2 border-questy-gold" />
         <span class="absolute top-[-3px] right-[-3px] w-5 h-5 border-t-2 border-r-2 border-questy-gold" />
         <span class="absolute bottom-[-3px] left-[-3px] w-5 h-5 border-b-2 border-l-2 border-questy-gold" />
@@ -273,7 +280,7 @@ onMounted(async () => {
       </div>
 
       <!-- Bloc 4 : Paramètres -->
-      <div class="relative bg-questy-sheet/90 border border-questy-gold/40 p-4">
+      <div v-if="!showAvatarEditor" class="relative bg-questy-sheet/90 border border-questy-gold/40 p-4">
         <span class="absolute top-[-3px] left-[-3px] w-5 h-5 border-t-2 border-l-2 border-questy-gold" />
         <span class="absolute top-[-3px] right-[-3px] w-5 h-5 border-t-2 border-r-2 border-questy-gold" />
         <span class="absolute bottom-[-3px] left-[-3px] w-5 h-5 border-b-2 border-l-2 border-questy-gold" />

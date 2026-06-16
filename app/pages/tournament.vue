@@ -49,8 +49,9 @@ async function handleResult() {
     <div class="w-full max-w-lg md:max-w-3xl mx-auto px-4 flex-1 flex flex-col" :class="combatData ? 'py-2' : 'py-6'">
 
       <header v-if="!combatData" class="mb-6">
-        <h1 class="text-xl md:text-3xl font-bold text-questy-gold" style="font-family: 'Newsreader', serif">
-          ⚔️ Tournoi hebdomadaire
+        <h1 class="text-3xl sm:text-4xl lg:text-5xl font-bold italic text-questy-gold flex items-end gap-2" style="font-family: 'Newsreader', serif">
+          <img src="/images/icons/icon-tournament.png" alt="" class="w-12 h-12 sm:w-14 sm:h-14 lg:w-16 lg:h-16 object-contain" />
+          Tournoi hebdomadaire
         </h1>
         <p class="text-xs text-questy-light/50 mt-1">1 combat par jour · 7 max par semaine · Victoire +30pts · Défaite +10pts</p>
       </header>
