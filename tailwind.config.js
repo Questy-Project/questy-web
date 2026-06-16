@@ -10,13 +10,23 @@ export default {
   darkMode: 'class',
   theme: {
     extend: {
+      keyframes: {
+        'loading-bar': {
+          '0%':   { width: '0%' },
+          '100%': { width: '100%' },
+        },
+      },
+      animation: {
+        'loading-bar': 'loading-bar 1.2s ease-in-out infinite',
+      },
       colors: {
         'questy-purple': '#534AB7',
         'questy-orange': '#D85A30',
-        'questy-dark':   '#0F0A2E',
+        'questy-dark':   '#0a0806',
         'questy-light':  '#EEEDFE',
         'questy-violet': '#7F77DD',
-        'questy-sheet':  '#211a6e',
+        'questy-sheet':  '#0d0a06',
+        'questy-gold':   '#f2ca50',
       },
     },
   },

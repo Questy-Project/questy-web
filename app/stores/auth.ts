@@ -7,6 +7,7 @@ export const useAuthStore = defineStore("auth", () => {
   const user = ref<User | null>(null);
 
   const isAuthenticated = computed(() => !!token.value);
+  const isAdmin = computed(() => user.value?.role === 'ADMIN');
 
   async function login(email: string, password: string) {
     const data = await useApi<AuthResponse>("/auth/login", {
@@ -19,10 +20,15 @@ export const useAuthStore = defineStore("auth", () => {
     });
   }
 
-  async function register(pseudo: string, email: string, password: string) {
+  async function register(
+    pseudo: string,
+    email: string,
+    password: string,
+    customization?: { silhouette?: string; skinTone?: number; hairStyle?: number; hairColor?: number },
+  ) {
     const data = await useApi<AuthResponse>('/auth/register', {
       method: 'POST',
-      body: { pseudo, email, password },
+      body: { pseudo, email, password, ...customization },
     });
     token.value = data.access_token;
     user.value = await useApi<User>('/users/me', {
@@ -47,6 +53,7 @@ export const useAuthStore = defineStore("auth", () => {
         user,
         token,
         isAuthenticated,
+        isAdmin,
         login,
         register,
         logout,

@@ -1,11 +1,13 @@
 <script setup lang="ts">
-import type { ActivityLog } from "~/types";
+import type { ActivityLog, AvatarCustomization } from "~/types";
+import { STAT_COLOR_MAP } from "~/constants/heroClasses";
 
 definePageMeta({ middleware: "auth" });
 
 const avatarStore = useAvatarStore();
 const authStore = useAuthStore();
 const activitiesStore = useActivitiesStore();
+const rankStore = useRankStore();
 
 const logsError = ref<string | null>(null);
 const editMode = ref(false);
@@ -17,32 +19,15 @@ const editLoading = ref(false);
 const avatar = computed(() => avatarStore.avatar);
 const maxStat = computed(() => avatarStore.maxStat);
 const user = computed(() => authStore.user);
-
 const xpPercent = computed(() => avatarStore.xpPercent);
 
 const stats = [
-  { key: "strength" as const, label: "Force", description: "Attaque physique" },
-  {
-    key: "agility" as const,
-    label: "Agilité",
-    description: "Esquive & vitesse",
-  },
-  {
-    key: "endurance" as const,
-    label: "Endurance",
-    description: "Résistance aux dégâts",
-  },
-  {
-    key: "intelligence" as const,
-    label: "Intelligence",
-    description: "Puissance magique",
-  },
-  { key: "spirit" as const, label: "Esprit", description: "Soins & soutien" },
-  {
-    key: "vitality" as const,
-    label: "Vitalité",
-    description: "Points de vie max",
-  },
+  { key: "strength" as const, label: "Force", description: "Dégâts d'attaque physique", color: STAT_COLOR_MAP.strength },
+  { key: "agility" as const, label: "Agilité", description: "Chance de critique (toutes actions)", color: STAT_COLOR_MAP.agility },
+  { key: "endurance" as const, label: "Endurance", description: "Blocage physique (contre Force)", color: STAT_COLOR_MAP.endurance },
+  { key: "intelligence" as const, label: "Intelligence", description: "Dégâts d'attaque magique", color: STAT_COLOR_MAP.intelligence },
+  { key: "spirit" as const, label: "Esprit", description: "Blocage magique (contre Intelligence)", color: STAT_COLOR_MAP.spirit },
+  { key: "vitality" as const, label: "Vitalité", description: "Points de vie max (100 + Vit×2)", color: STAT_COLOR_MAP.vitality },
 ];
 
 function startEdit() {
@@ -76,6 +61,25 @@ function logout() {
   navigateTo("/auth");
 }
 
+const showAvatarEditor = ref(false);
+const avatarSaving = ref(false);
+const avatarError = ref<string | null>(null);
+const pendingAvatarCustomization = ref<AvatarCustomization | null>(null);
+
+async function saveAvatarCustomization() {
+  if (!pendingAvatarCustomization.value) { showAvatarEditor.value = false; return; }
+  avatarSaving.value = true;
+  avatarError.value = null;
+  try {
+    await avatarStore.updateCustomization(pendingAvatarCustomization.value);
+    showAvatarEditor.value = false;
+  } catch {
+    avatarError.value = "Impossible de sauvegarder les modifications.";
+  } finally {
+    avatarSaving.value = false;
+  }
+}
+
 function logDisplayName(log: ActivityLog): string {
   return log.customName ?? log.activity?.name ?? "Activité";
 }
@@ -90,9 +94,12 @@ function logRelativeDate(dateStr: string): string {
   return `Il y a ${days} jour${days > 1 ? "s" : ""}`;
 }
 
+const { rankBorderColor, isLegend } = storeToRefs(rankStore);
+
 onMounted(async () => {
   if (!authStore.user) await authStore.fetchUser();
   if (!avatarStore.avatar) await avatarStore.fetchAvatar();
+  await rankStore.fetchRank();
   try {
     await activitiesStore.fetchRecentLogs();
   } catch {
@@ -102,52 +109,150 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="min-h-screen bg-questy-dark text-questy-light pb-24">
-    <div class="max-w-lg mx-auto px-4 py-6 space-y-6">
-      <!-- Bloc 1 : Avatar -->
-      <div v-if="avatar" class="flex flex-col items-center gap-3">
-        <AvatarAvatar2D :hero-class="avatar.heroClass" />
-        <p class="text-xl font-bold">{{ user?.pseudo }}</p>
-        <AvatarHeroClass :hero-class="avatar.heroClass" />
-        <p class="text-sm text-questy-light/60">Niveau {{ avatar.level }}</p>
-        <div class="w-full">
-          <div class="flex justify-between text-xs text-questy-light/60 mb-1">
-            <span>XP</span>
-            <span>{{ avatar.xp }} / {{ avatar.xpNextLevel }}</span>
-          </div>
-          <div class="bg-white/10 rounded-full h-2">
-            <div
-              class="h-full rounded-full bg-questy-purple transition-all duration-500"
-              :style="{ width: `${xpPercent}%` }"
+  <div
+    class="min-h-screen bg-questy-dark text-questy-light pb-24 bg-cover bg-center bg-no-repeat"
+    :class="showAvatarEditor ? 'flex items-center justify-center' : ''"
+    style="font-family: 'Be Vietnam Pro', sans-serif; background-image: linear-gradient(rgba(0,0,0,0.50), rgba(0,0,0,0.50)), url('/images/bg-library.jpg')"
+  >
+    <div
+      class="w-full"
+      :class="showAvatarEditor
+        ? 'max-w-sm px-4'
+        : 'max-w-xl lg:max-w-2xl mx-auto px-4 sm:px-8 lg:px-10 py-6 sm:py-10 space-y-5 sm:space-y-6'"
+    >
+      <!-- Header -->
+      <header v-if="!showAvatarEditor" class="border-b border-questy-gold/20 pb-4">
+        <h1
+          class="text-3xl sm:text-4xl lg:text-5xl font-bold italic text-questy-gold flex items-end gap-2"
+          style="font-family: 'Newsreader', serif"
+        >
+          <img src="/images/icons/icon-profil.png" alt="" class="w-12 h-12 sm:w-14 sm:h-14 lg:w-16 lg:h-16 object-contain" />
+          Mon Profil
+        </h1>
+        <p class="text-xs sm:text-sm text-questy-light/50 uppercase tracking-widest mt-1">
+          {{ user?.pseudo }} · {{ avatar?.heroClass ?? 'Aventurier' }}
+        </p>
+      </header>
+
+      <!-- Bloc 1 : Portrait avatar -->
+      <div
+        v-if="avatar"
+        class="relative bg-questy-sheet/90 p-5 flex flex-col items-center gap-3 transition-all duration-500"
+        :class="{ 'rank-legend-glow': isLegend }"
+        :style="{ border: `2px solid ${rankBorderColor}` }"
+      >
+        <span class="absolute top-[-3px] left-[-3px] w-5 h-5 border-t-2 border-l-2 border-questy-gold" />
+        <span class="absolute top-[-3px] right-[-3px] w-5 h-5 border-t-2 border-r-2 border-questy-gold" />
+        <span class="absolute bottom-[-3px] left-[-3px] w-5 h-5 border-b-2 border-l-2 border-questy-gold" />
+        <span class="absolute bottom-[-3px] right-[-3px] w-5 h-5 border-b-2 border-r-2 border-questy-gold" />
+        <div class="text-xs text-questy-gold/50 uppercase tracking-widest font-bold">Portrait du Héros</div>
+
+        <!-- Vue portrait (mode lecture) -->
+        <template v-if="!showAvatarEditor">
+          <div v-if="avatar" class="scale-150 my-4">
+            <AvatarCanvas
+              :silhouette="avatar.silhouette"
+              :skin-tone="avatar.skinTone"
+              :hair-style="avatar.hairStyle"
+              :hair-color="avatar.hairColor"
+              :hero-class="avatar.heroClass"
+              :show-hood="avatar.showHood ?? false"
             />
           </div>
-        </div>
+          <AvatarHeroClass :hero-class="avatar.heroClass" />
+          <p class="text-xs text-questy-light/50">Niveau {{ avatar.level }}</p>
+          <div class="w-full">
+            <div class="flex justify-between text-xs text-questy-light/50 mb-1">
+              <span>XP</span>
+              <span>{{ avatar.xp }} / {{ avatar.xpNextLevel }}</span>
+            </div>
+            <div class="bg-questy-dark rounded-full h-2">
+              <div
+                class="h-full rounded-full bg-questy-purple transition-all duration-500"
+                :style="{ width: `${xpPercent}%` }"
+              />
+            </div>
+          </div>
+          <button
+            class="mt-1 text-xs text-questy-gold/70 underline hover:text-questy-gold"
+            @click="showAvatarEditor = true"
+          >
+            Modifier mon avatar
+          </button>
+        </template>
+
+        <!-- Éditeur avatar (mode édition) -->
+        <template v-else>
+          <AvatarCustomizer
+            :hero-class="avatar.heroClass"
+            :initial="{ silhouette: avatar.silhouette, skinTone: avatar.skinTone, hairStyle: avatar.hairStyle, hairColor: avatar.hairColor, showHood: avatar.showHood ?? false }"
+            @update="(c) => pendingAvatarCustomization = c"
+          />
+          <p v-if="avatarError" class="text-red-400 text-xs mt-2">{{ avatarError }}</p>
+          <div class="flex gap-2 mt-4 w-full">
+            <button
+              class="flex-1 py-2 border border-questy-gold/30 text-questy-light/50 text-xs uppercase tracking-widest hover:border-questy-gold/60"
+              @click="showAvatarEditor = false"
+            >
+              Annuler
+            </button>
+            <button
+              :disabled="avatarSaving"
+              class="flex-1 py-2 bg-questy-gold/20 border border-questy-gold text-questy-gold text-xs font-bold uppercase tracking-widest disabled:opacity-50"
+              @click="saveAvatarCustomization"
+            >
+              {{ avatarSaving ? 'Sauvegarde...' : 'Terminé' }}
+            </button>
+          </div>
+        </template>
       </div>
 
       <!-- Bloc 2 : Stats -->
-      <div v-if="avatar" class="bg-[#16213e] rounded-2xl p-4 space-y-4">
-        <h2
-          class="text-sm font-semibold text-questy-light/60 uppercase tracking-wider"
-        >
-          Statistiques
-        </h2>
-        <AvatarStatBar
-          v-for="stat in stats"
-          :key="stat.key"
-          :label="stat.label"
-          :value="avatar[stat.key]"
-          :max-value="maxStat"
-          :description="stat.description"
-        />
+      <div
+        v-if="avatar && !showAvatarEditor"
+        class="relative bg-questy-sheet/90 border border-questy-gold/40 p-4"
+      >
+        <span class="absolute top-[-3px] left-[-3px] w-5 h-5 border-t-2 border-l-2 border-questy-gold" />
+        <span class="absolute top-[-3px] right-[-3px] w-5 h-5 border-t-2 border-r-2 border-questy-gold" />
+        <span class="absolute bottom-[-3px] left-[-3px] w-5 h-5 border-b-2 border-l-2 border-questy-gold" />
+        <span class="absolute bottom-[-3px] right-[-3px] w-5 h-5 border-b-2 border-r-2 border-questy-gold" />
+        <div class="space-y-4">
+          <div class="flex items-center gap-2">
+            <div class="h-0.5 w-4 bg-questy-gold" />
+            <h2
+              class="text-sm font-bold italic text-questy-gold"
+              style="font-family: 'Newsreader', serif"
+            >
+              Statistiques
+            </h2>
+          </div>
+          <AvatarStatBar
+            v-for="stat in stats"
+            :key="stat.key"
+            :label="stat.label"
+            :value="(avatar[stat.key] as number)"
+            :max-value="100"
+            :description="stat.description"
+            :color="stat.color"
+          />
+        </div>
       </div>
 
       <!-- Bloc 3 : Historique -->
-      <div class="bg-[#16213e] rounded-2xl p-4">
-        <h2
-          class="text-sm font-semibold text-questy-light/60 uppercase tracking-wider mb-4"
-        >
-          Dernières activités
-        </h2>
+      <div v-if="!showAvatarEditor" class="relative bg-questy-sheet/90 border border-questy-gold/40 p-4">
+        <span class="absolute top-[-3px] left-[-3px] w-5 h-5 border-t-2 border-l-2 border-questy-gold" />
+        <span class="absolute top-[-3px] right-[-3px] w-5 h-5 border-t-2 border-r-2 border-questy-gold" />
+        <span class="absolute bottom-[-3px] left-[-3px] w-5 h-5 border-b-2 border-l-2 border-questy-gold" />
+        <span class="absolute bottom-[-3px] right-[-3px] w-5 h-5 border-b-2 border-r-2 border-questy-gold" />
+        <div class="flex items-center gap-2 mb-4">
+          <div class="h-0.5 w-4 bg-questy-gold" />
+          <h2
+            class="text-sm font-bold italic text-questy-gold"
+            style="font-family: 'Newsreader', serif"
+          >
+            Dernières activités
+          </h2>
+        </div>
         <p v-if="logsError" class="text-sm text-red-400 text-center py-4">
           {{ logsError }}
         </p>
@@ -169,92 +274,114 @@ onMounted(async () => {
                 {{ log.duration }} min · {{ logRelativeDate(log.loggedAt) }}
               </p>
             </div>
-            <span class="text-xs font-bold text-questy-orange"
-              >+{{ log.xpGained }} XP</span
-            >
+            <span class="text-xs font-bold text-questy-gold">+{{ log.xpGained }} XP</span>
           </li>
         </ul>
       </div>
 
       <!-- Bloc 4 : Paramètres -->
-      <div class="bg-[#16213e] rounded-2xl p-4 space-y-4">
-        <h2
-          class="text-sm font-semibold text-questy-light/60 uppercase tracking-wider"
-        >
-          Paramètres
-        </h2>
-
-        <!-- Mode lecture -->
-        <template v-if="!editMode">
-          <div class="space-y-2">
-            <div class="flex justify-between text-sm">
-              <span class="text-questy-light/60">Pseudo</span>
-              <span>{{ user?.pseudo }}</span>
-            </div>
-            <div class="flex justify-between text-sm">
-              <span class="text-questy-light/60">Âge</span>
-              <span>{{ user?.age ? `${user.age} ans` : "Non renseigné" }}</span>
-            </div>
+      <div v-if="!showAvatarEditor" class="relative bg-questy-sheet/90 border border-questy-gold/40 p-4">
+        <span class="absolute top-[-3px] left-[-3px] w-5 h-5 border-t-2 border-l-2 border-questy-gold" />
+        <span class="absolute top-[-3px] right-[-3px] w-5 h-5 border-t-2 border-r-2 border-questy-gold" />
+        <span class="absolute bottom-[-3px] left-[-3px] w-5 h-5 border-b-2 border-l-2 border-questy-gold" />
+        <span class="absolute bottom-[-3px] right-[-3px] w-5 h-5 border-b-2 border-r-2 border-questy-gold" />
+        <div class="space-y-4">
+          <div class="flex items-center gap-2">
+            <div class="h-0.5 w-4 bg-questy-gold" />
+            <h2
+              class="text-sm font-bold italic text-questy-gold"
+              style="font-family: 'Newsreader', serif"
+            >
+              Paramètres
+            </h2>
           </div>
+
+          <!-- Mode lecture -->
+          <template v-if="!editMode">
+            <div class="space-y-2">
+              <div class="flex justify-between text-sm">
+                <span class="text-questy-light/60">Pseudo</span>
+                <span>{{ user?.pseudo }}</span>
+              </div>
+              <div class="flex justify-between text-sm">
+                <span class="text-questy-light/60">Âge</span>
+                <span>{{ user?.age ? `${user.age} ans` : "Non renseigné" }}</span>
+              </div>
+            </div>
+            <button
+              class="w-full py-3 border border-questy-gold/40 text-sm text-questy-gold hover:bg-questy-gold/10 transition-colors flex items-center justify-center gap-2"
+              @click="startEdit"
+            >
+              <span class="material-symbols-outlined text-base leading-none">edit</span>
+              Modifier mes informations
+            </button>
+          </template>
+
+          <!-- Mode édition -->
+          <template v-else>
+            <div class="space-y-3">
+              <div>
+                <label class="text-xs text-questy-light/60 mb-1 block">Pseudo</label>
+                <input
+                  v-model="editPseudo"
+                  type="text"
+                  class="w-full bg-questy-dark text-questy-light border border-questy-gold/30 px-4 py-3 text-sm outline-none focus:border-questy-gold"
+                />
+              </div>
+              <div>
+                <label class="text-xs text-questy-light/60 mb-1 block">Âge</label>
+                <input
+                  v-model.number="editAge"
+                  type="number"
+                  min="1"
+                  max="120"
+                  class="w-full bg-questy-dark text-questy-light border border-questy-gold/30 px-4 py-3 text-sm outline-none focus:border-questy-gold"
+                />
+              </div>
+              <p v-if="editError" class="text-xs text-red-400">{{ editError }}</p>
+              <div class="grid grid-cols-2 gap-3">
+                <button
+                  class="py-3 border border-questy-gold/40 text-sm text-questy-gold"
+                  @click="cancelEdit"
+                >
+                  Annuler
+                </button>
+                <button
+                  class="relative overflow-hidden active:translate-y-0.5 transition-transform"
+                  :disabled="editLoading"
+                  @click="saveEdit"
+                >
+                  <div class="absolute inset-0 bg-gradient-to-b from-questy-gold to-[#d4af37]" />
+                  <div class="relative px-4 py-3 flex items-center justify-center border-b-4 border-[#554300]/40">
+                    <span class="font-bold text-[#3c2f00] text-sm">
+                      {{ editLoading ? "Sauvegarde..." : "Sauvegarder" }}
+                    </span>
+                  </div>
+                </button>
+              </div>
+            </div>
+          </template>
+
+          <!-- Déconnexion -->
           <button
-            class="w-full py-3 rounded-xl border border-questy-light/20 text-sm text-questy-light"
-            @click="startEdit"
+            class="w-full py-3 border border-red-500/50 text-red-400 text-sm hover:bg-red-500/10 transition-colors"
+            @click="logout"
           >
-            ✏️ Modifier mes informations
+            Se déconnecter
           </button>
-        </template>
-
-        <!-- Mode édition -->
-        <template v-else>
-          <div class="space-y-3">
-            <div>
-              <label class="text-xs text-questy-light/60 mb-1 block"
-                >Pseudo</label
-              >
-              <input
-                v-model="editPseudo"
-                type="text"
-                class="w-full bg-[#0f3460] text-questy-light rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-questy-purple"
-              />
-            </div>
-            <div>
-              <label class="text-xs text-questy-light/60 mb-1 block">Âge</label>
-              <input
-                v-model.number="editAge"
-                type="number"
-                min="1"
-                max="120"
-                class="w-full bg-[#0f3460] text-questy-light rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-questy-purple"
-              />
-            </div>
-            <p v-if="editError" class="text-xs text-red-400">{{ editError }}</p>
-            <div class="grid grid-cols-2 gap-3">
-              <button
-                class="py-3 rounded-xl border border-questy-light/20 text-sm text-questy-light"
-                @click="cancelEdit"
-              >
-                Annuler
-              </button>
-              <button
-                class="py-3 rounded-xl bg-questy-orange text-white text-sm font-semibold"
-                :disabled="editLoading"
-                @click="saveEdit"
-              >
-                {{ editLoading ? "Sauvegarde..." : "Sauvegarder" }}
-              </button>
-            </div>
-          </div>
-        </template>
-
-        <!-- Déconnexion -->
-        <button
-          class="w-full py-3 rounded-xl border border-red-500/50 text-red-400 text-sm"
-          @click="logout"
-        >
-          Se déconnecter
-        </button>
+        </div>
       </div>
     </div>
-    <UiBottomNav />
+
   </div>
 </template>
+
+<style scoped>
+@keyframes legend-border-pulse {
+  0%, 100% { box-shadow: 0 0 10px #FFB80055, 0 0 20px #FFB80022; }
+  50%       { box-shadow: 0 0 20px #FFB800AA, 0 0 40px #FFB80044; }
+}
+.rank-legend-glow {
+  animation: legend-border-pulse 1.8s ease-in-out infinite;
+}
+</style>
