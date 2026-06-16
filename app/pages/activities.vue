@@ -8,7 +8,6 @@ const activitiesStore = useActivitiesStore();
 const avatarStore = useAvatarStore();
 const partsStore = usePartsStore();
 
-const showSheet = ref(false);
 
 // Formulaire lecture
 const bookTitle      = ref('');
@@ -23,10 +22,10 @@ const canSubmitReading = computed(
   () => !isReadingActivity.value || (bookTitle.value.trim() !== '' && bookAuthor.value.trim() !== ''),
 );
 
-const difficultyOptions: { label: string; value: 'easy' | 'medium' | 'hard'; icon: string }[] = [
-  { label: 'Facile',    value: 'easy',   icon: 'sentiment_satisfied' },
-  { label: 'Moyen',     value: 'medium', icon: 'sentiment_neutral' },
-  { label: 'Difficile', value: 'hard',   icon: 'sentiment_very_dissatisfied' },
+const difficultyOptions: { label: string; value: 'easy' | 'medium' | 'hard'; img: string }[] = [
+  { label: 'Facile',    value: 'easy',   img: '/images/icons/intensity-1.png' },
+  { label: 'Moyen',     value: 'medium', img: '/images/icons/intensity-2.png' },
+  { label: 'Difficile', value: 'hard',   img: '/images/icons/intensity-3.png' },
 ];
 
 // Quiz — état
@@ -61,16 +60,11 @@ const durations = [
 ];
 
 const intensities = [
-  { label: 'Légère', value: 1, icon: 'directions_walk' },
-  { label: 'Modérée', value: 1.5, icon: 'directions_run' },
-  { label: 'Intense', value: 2, icon: 'local_fire_department' },
+  { label: 'Légère',  value: 1,   img: '/images/icons/intensity-1.png' },
+  { label: 'Modérée', value: 1.5, img: '/images/icons/intensity-2.png' },
+  { label: 'Intense', value: 2,   img: '/images/icons/intensity-3.png' },
 ];
 
-const selectedLabel = computed(() => {
-  if (activitiesStore.selectedActivity) return activitiesStore.selectedActivity.name;
-  if (activitiesStore.customName) return activitiesStore.customName;
-  return null;
-});
 
 function onSelect(activity: Activity | null, custom: boolean) {
   if (!custom && activity) {
@@ -78,7 +72,6 @@ function onSelect(activity: Activity | null, custom: boolean) {
     activitiesStore.customName = '';
     activitiesStore.customCategory = '';
   }
-  showSheet.value = false;
 }
 
 async function submit() {
@@ -205,199 +198,147 @@ function closeResultAndGoHome() {
     class="min-h-screen bg-questy-dark text-questy-light pb-20 bg-cover bg-center bg-no-repeat flex flex-col"
     style="font-family: 'Be Vietnam Pro', sans-serif; background-image: linear-gradient(rgba(0,0,0,0.50), rgba(0,0,0,0.50)), url('/images/bg-forest.jpg')"
   >
-    <div class="flex-1 flex flex-col justify-center max-w-xl mx-auto w-full px-4 sm:px-8 space-y-5 sm:space-y-6 py-6 sm:py-12">
-      <!-- Header -->
-      <header class="border-b border-questy-gold/20 pb-4">
-        <h1
-          class="text-3xl sm:text-4xl font-bold italic text-questy-gold"
-          style="font-family: 'Newsreader', serif"
-        >
-          Mes Activités
-        </h1>
-        <p class="text-xs sm:text-sm text-questy-light/50 uppercase tracking-widest mt-1">
-          Déclare tes efforts, gagne de l'XP
-        </p>
-      </header>
-
-      <!-- Succès -->
-      <div
-        v-if="activitiesStore.success"
-        class="relative bg-questy-sheet/90 border border-questy-gold/40 p-5 text-center"
+    <!-- Header -->
+    <header class="w-full px-4 sm:px-8 lg:px-16 pt-6 pb-4 border-b border-questy-gold/20">
+      <h1
+        class="text-3xl sm:text-4xl lg:text-5xl font-bold italic text-questy-gold flex items-end gap-2"
+        style="font-family: 'Newsreader', serif"
       >
-        <span class="absolute top-[-3px] left-[-3px] w-5 h-5 border-t-2 border-l-2 border-questy-gold" />
-        <span class="absolute top-[-3px] right-[-3px] w-5 h-5 border-t-2 border-r-2 border-questy-gold" />
-        <span class="absolute bottom-[-3px] left-[-3px] w-5 h-5 border-b-2 border-l-2 border-questy-gold" />
-        <span class="absolute bottom-[-3px] right-[-3px] w-5 h-5 border-b-2 border-r-2 border-questy-gold" />
-        <p class="text-questy-gold font-semibold" style="font-family: 'Newsreader', serif">
-          Activité enregistrée !
-        </p>
-        <p class="text-questy-light/70 text-sm mt-1">
-          +{{ activitiesStore.lastLog?.xpGained }} XP · +{{ activitiesStore.lastLog?.partsUnlocked }} <span class="material-symbols-outlined text-sm" style="font-variation-settings:'FILL' 1; color: #f2ca50">favorite</span>
-        </p>
-        <p class="text-questy-light/40 text-xs mt-2">Retour au dashboard...</p>
-      </div>
+        <img src="/images/icons/icon-activities.png" alt="" class="w-12 h-12 sm:w-14 sm:h-14 lg:w-16 lg:h-16 object-contain" />
+        Mes Activités
+      </h1>
+      <p class="text-xs sm:text-sm lg:text-base text-questy-light/50 uppercase tracking-widest mt-1">
+        Déclare tes efforts, gagne de l'XP
+      </p>
+    </header>
 
-      <template v-else>
-        <!-- Activité -->
-        <div class="space-y-2">
-          <p class="text-xs text-questy-gold/70 uppercase tracking-widest font-bold">Activité</p>
-          <button
-            class="w-full flex justify-between items-center bg-questy-sheet/90 border border-questy-gold/40 px-4 py-3 text-sm"
-            @click="showSheet = true"
-          >
-            <span :class="selectedLabel ? 'text-questy-light' : 'text-questy-light/40'">
-              {{ selectedLabel ?? 'Choisir une activité...' }}
-            </span>
-            <span class="text-questy-gold">▼</span>
-          </button>
-        </div>
+    <!-- Carte formulaire — s'étend sur toute la hauteur disponible -->
+    <div class="flex-1 flex items-center justify-center px-4 sm:px-8 lg:px-16 py-6 lg:py-10">
+      <div class="bg-questy-sheet/70 backdrop-blur-sm border border-questy-gold/30 rounded-xl p-5 sm:p-8 lg:p-10 flex flex-col max-w-2xl lg:max-w-3xl w-full">
 
-        <!-- Formulaire lecture (conditionnel) -->
-        <template v-if="isReadingActivity">
-          <div class="space-y-2">
-            <p class="text-xs text-questy-gold/70 uppercase tracking-widest font-bold">Type de lecture</p>
-            <div class="w-full bg-questy-sheet/60 border border-questy-gold/20 px-4 py-3 text-sm text-questy-light/60 italic">
-              {{ activitiesStore.selectedActivity?.name }}
-            </div>
-          </div>
-          <div class="space-y-2">
-            <p class="text-xs text-questy-gold/70 uppercase tracking-widest font-bold">Titre du livre</p>
-            <input
-              v-model="bookTitle"
-              type="text"
-              placeholder="Ex : Le Seigneur des Anneaux"
-              class="w-full bg-questy-sheet/90 border border-questy-gold/40 px-4 py-3 text-sm text-questy-light placeholder:text-questy-light/30 focus:outline-none focus:border-questy-gold"
-            />
-          </div>
-          <div class="space-y-2">
-            <p class="text-xs text-questy-gold/70 uppercase tracking-widest font-bold">Auteur</p>
-            <input
-              v-model="bookAuthor"
-              type="text"
-              placeholder="Ex : J.R.R. Tolkien"
-              class="w-full bg-questy-sheet/90 border border-questy-gold/40 px-4 py-3 text-sm text-questy-light placeholder:text-questy-light/30 focus:outline-none focus:border-questy-gold"
-            />
-          </div>
-          <div class="space-y-2">
-            <p class="text-xs text-questy-gold/70 uppercase tracking-widest font-bold">
-              Tome / Volume <span class="text-questy-light/30 normal-case font-normal">(optionnel)</span>
-            </p>
-            <input
-              v-model="bookVolume"
-              type="text"
-              placeholder="Ex : Tome 2 — Les Deux Tours"
-              class="w-full bg-questy-sheet/90 border border-questy-gold/40 px-4 py-3 text-sm text-questy-light placeholder:text-questy-light/30 focus:outline-none focus:border-questy-gold"
-            />
-          </div>
-          <div class="space-y-2">
-            <p class="text-xs text-questy-gold/70 uppercase tracking-widest font-bold">Difficulté du quiz</p>
-            <div class="grid grid-cols-3 gap-2">
-              <button
-                v-for="d in difficultyOptions"
-                :key="d.value"
-                class="py-3 border transition-colors text-center"
-                :class="bookDifficulty === d.value
-                  ? 'bg-questy-gold/20 border-questy-gold'
-                  : 'bg-questy-sheet/90 border-questy-gold/20'"
-                @click="bookDifficulty = d.value"
-              >
-                <span class="material-symbols-outlined text-questy-gold text-xl block">{{ d.icon }}</span>
-                <div class="text-xs font-semibold mt-1 text-questy-light">{{ d.label }}</div>
-              </button>
-            </div>
-          </div>
-        </template>
-
-        <!-- Durée -->
-        <div class="space-y-2">
-          <p class="text-xs text-questy-gold/70 uppercase tracking-widest font-bold">Durée</p>
-          <div class="grid grid-cols-4 gap-2">
-            <button
-              v-for="d in durations"
-              :key="d.value"
-              class="py-2 text-sm font-medium border transition-colors"
-              :class="activitiesStore.duration === d.value
-                ? 'bg-questy-gold/20 border-questy-gold text-questy-gold'
-                : 'bg-questy-sheet/90 border-questy-gold/20 text-questy-light/60'"
-              @click="activitiesStore.duration = d.value"
-            >
-              {{ d.label }}
-            </button>
-          </div>
-        </div>
-
-        <!-- Intensité (masquée pour les lectures — remplacée par la difficulté du quiz) -->
-        <template v-if="!isReadingActivity">
-          <div class="space-y-2">
-            <p class="text-xs text-questy-gold/70 uppercase tracking-widest font-bold">Intensité</p>
-            <div class="grid grid-cols-3 gap-2">
-              <button
-                v-for="i in intensities"
-                :key="i.value"
-                class="py-3 border transition-colors text-center"
-                :class="activitiesStore.intensity === i.value
-                  ? 'bg-questy-gold/20 border-questy-gold'
-                  : 'bg-questy-sheet/90 border-questy-gold/20'"
-                @click="activitiesStore.intensity = i.value"
-              >
-                <span class="material-symbols-outlined text-questy-gold text-xl block">{{ i.icon }}</span>
-                <div class="text-xs font-semibold mt-1">{{ i.label }}</div>
-                <div class="text-[10px] text-questy-light/50">×{{ i.value }}</div>
-              </button>
-            </div>
-          </div>
-        </template>
-
-        <!-- Aperçu gains -->
+        <!-- Succès -->
         <div
-          v-if="!isReadingActivity && activitiesStore.duration && activitiesStore.intensity"
-          class="relative bg-questy-sheet/90 border border-questy-gold/40 px-4 py-3"
+          v-if="activitiesStore.success"
+          class="relative border border-questy-gold/40 p-6 text-center my-auto"
         >
           <span class="absolute top-[-3px] left-[-3px] w-5 h-5 border-t-2 border-l-2 border-questy-gold" />
           <span class="absolute top-[-3px] right-[-3px] w-5 h-5 border-t-2 border-r-2 border-questy-gold" />
           <span class="absolute bottom-[-3px] left-[-3px] w-5 h-5 border-b-2 border-l-2 border-questy-gold" />
           <span class="absolute bottom-[-3px] right-[-3px] w-5 h-5 border-b-2 border-r-2 border-questy-gold" />
-          <p class="text-xs font-bold text-questy-gold mb-1 flex items-center gap-1">
-            <span class="material-symbols-outlined text-[16px]">bolt</span>
-            Aperçu des gains
+          <p class="text-questy-gold font-semibold text-lg" style="font-family: 'Newsreader', serif">Activité enregistrée !</p>
+          <p class="text-questy-light/70 text-sm mt-1">
+            +{{ activitiesStore.lastLog?.xpGained }} XP · +{{ activitiesStore.lastLog?.partsUnlocked }}
+            <span class="material-symbols-outlined text-sm" style="font-variation-settings:'FILL' 1; color: #f2ca50">favorite</span>
           </p>
-          <div class="flex justify-between text-sm">
-            <span class="text-questy-gold font-bold">+{{ activitiesStore.xpPreview }} XP</span>
-            <span class="text-questy-light/60">+{{ activitiesStore.partsPreview }} <span class="material-symbols-outlined text-sm" style="font-variation-settings:'FILL' 1; color: #f2ca50">favorite</span></span>
-          </div>
+          <p class="text-questy-light/40 text-xs mt-2">Retour au dashboard...</p>
         </div>
 
-        <!-- Erreur -->
-        <p v-if="activitiesStore.error" class="text-red-400 text-sm text-center">
-          {{ activitiesStore.error }}
-        </p>
+        <template v-else>
+          <div class="flex-1 flex flex-col space-y-6 lg:space-y-8">
 
-        <!-- CTA -->
-        <button
-          class="relative w-full overflow-hidden transition-all"
-          :class="activitiesStore.canSubmit ? 'active:translate-y-0.5' : 'opacity-40 cursor-not-allowed'"
-          :disabled="!activitiesStore.canSubmit || !canSubmitReading || activitiesStore.loading"
-          @click="submit"
-        >
-          <div class="absolute inset-0 bg-gradient-to-b from-questy-gold to-[#d4af37]" />
-          <div class="relative px-6 py-4 flex items-center justify-center gap-2 border-b-4 border-[#554300]/40">
-            <template v-if="activitiesStore.loading">
-              <span class="font-bold text-[#3c2f00] uppercase tracking-widest text-sm">Enregistrement...</span>
+            <!-- Catégorie + Activité -->
+            <ActivityCombobox @select="onSelect" />
+
+            <!-- Champs lecture -->
+            <template v-if="isReadingActivity">
+              <div class="space-y-2">
+                <p class="text-xs lg:text-sm text-questy-gold/70 uppercase tracking-widest font-bold">Titre du livre</p>
+                <input v-model="bookTitle" type="text" placeholder="Ex : Le Seigneur des Anneaux"
+                  class="w-full bg-questy-dark/60 border border-questy-gold/40 px-4 py-3 lg:py-4 text-sm lg:text-base text-questy-light placeholder:text-questy-light/30 focus:outline-none focus:border-questy-gold" />
+              </div>
+              <div class="space-y-2">
+                <p class="text-xs lg:text-sm text-questy-gold/70 uppercase tracking-widest font-bold">Auteur</p>
+                <input v-model="bookAuthor" type="text" placeholder="Ex : J.R.R. Tolkien"
+                  class="w-full bg-questy-dark/60 border border-questy-gold/40 px-4 py-3 lg:py-4 text-sm lg:text-base text-questy-light placeholder:text-questy-light/30 focus:outline-none focus:border-questy-gold" />
+              </div>
+              <div class="space-y-2">
+                <p class="text-xs lg:text-sm text-questy-gold/70 uppercase tracking-widest font-bold">
+                  Tome / Volume <span class="text-questy-light/30 normal-case font-normal">(optionnel)</span>
+                </p>
+                <input v-model="bookVolume" type="text" placeholder="Ex : Tome 2 — Les Deux Tours"
+                  class="w-full bg-questy-dark/60 border border-questy-gold/40 px-4 py-3 lg:py-4 text-sm lg:text-base text-questy-light placeholder:text-questy-light/30 focus:outline-none focus:border-questy-gold" />
+              </div>
             </template>
-            <template v-else>
-              <span class="material-symbols-outlined text-sm text-[#3c2f00]">swords</span>
-              <span class="font-bold text-[#3c2f00] uppercase tracking-widest text-sm">Valider l'activité</span>
-            </template>
+
+            <!-- Durée -->
+            <div class="space-y-2">
+              <p class="text-xs lg:text-sm text-questy-gold/70 uppercase tracking-widest font-bold">Durée</p>
+              <div class="grid grid-cols-4 gap-2">
+                <button
+                  v-for="d in durations" :key="d.value"
+                  class="py-2 lg:py-3 text-sm lg:text-base font-medium border transition-colors"
+                  :class="activitiesStore.duration === d.value
+                    ? 'bg-questy-gold/20 border-questy-gold text-questy-gold'
+                    : 'bg-questy-dark/60 border-questy-gold/20 text-questy-light/60'"
+                  @click="activitiesStore.duration = d.value"
+                >{{ d.label }}</button>
+              </div>
+            </div>
+
+            <!-- Intensité / Difficulté -->
+            <div class="space-y-2">
+              <p class="text-xs lg:text-sm text-questy-gold/70 uppercase tracking-widest font-bold">
+                {{ isReadingActivity ? 'Difficulté du quiz' : 'Intensité' }}
+              </p>
+              <div class="grid grid-cols-3 gap-2">
+                <template v-if="isReadingActivity">
+                  <button v-for="d in difficultyOptions" :key="d.value" class="flex justify-center transition-all" @click="bookDifficulty = d.value">
+                    <img :src="d.img" :alt="d.label" class="w-16 h-16 lg:w-20 lg:h-20 object-contain rounded-full transition-all" :class="bookDifficulty === d.value ? 'opacity-100 scale-110' : 'opacity-40'" />
+                  </button>
+                </template>
+                <template v-else>
+                  <button v-for="i in intensities" :key="i.value" class="flex justify-center transition-all" @click="activitiesStore.intensity = i.value">
+                    <img :src="i.img" :alt="i.label" class="w-16 h-16 lg:w-20 lg:h-20 object-contain rounded-full transition-all" :class="activitiesStore.intensity === i.value ? 'opacity-100 scale-110' : 'opacity-40'" />
+                  </button>
+                </template>
+              </div>
+            </div>
+
+            <!-- Aperçu gains -->
+            <div
+              v-if="!isReadingActivity && activitiesStore.duration && activitiesStore.intensity"
+              class="relative bg-questy-dark/60 border border-questy-gold/40 px-4 py-3 lg:px-6 lg:py-4"
+            >
+              <span class="absolute top-[-3px] left-[-3px] w-5 h-5 border-t-2 border-l-2 border-questy-gold" />
+              <span class="absolute top-[-3px] right-[-3px] w-5 h-5 border-t-2 border-r-2 border-questy-gold" />
+              <span class="absolute bottom-[-3px] left-[-3px] w-5 h-5 border-b-2 border-l-2 border-questy-gold" />
+              <span class="absolute bottom-[-3px] right-[-3px] w-5 h-5 border-b-2 border-r-2 border-questy-gold" />
+              <p class="text-xs lg:text-sm font-bold text-questy-gold mb-1 flex items-center gap-1">
+                <span class="material-symbols-outlined text-[16px]">bolt</span> Aperçu des gains
+              </p>
+              <div class="flex justify-between text-sm lg:text-base">
+                <span class="text-questy-gold font-bold">+{{ activitiesStore.xpPreview }} XP</span>
+                <span class="text-questy-light/60">+{{ activitiesStore.partsPreview }} <span class="material-symbols-outlined text-sm" style="font-variation-settings:'FILL' 1; color: #f2ca50">favorite</span></span>
+              </div>
+            </div>
+
+            <p v-if="activitiesStore.error" class="text-red-400 text-sm text-center">{{ activitiesStore.error }}</p>
+
+            <!-- CTA -->
+            <div>
+              <button
+                class="relative w-full overflow-hidden transition-all"
+                :class="activitiesStore.canSubmit ? 'active:translate-y-0.5' : 'opacity-40 cursor-not-allowed'"
+                :disabled="!activitiesStore.canSubmit || !canSubmitReading || activitiesStore.loading"
+                @click="submit"
+              >
+                <div class="absolute inset-0 bg-gradient-to-b from-questy-gold to-[#d4af37]" />
+                <div class="relative px-6 py-4 lg:py-5 flex items-center justify-center gap-2 border-b-4 border-[#554300]/40">
+                  <template v-if="activitiesStore.loading">
+                    <span class="font-bold text-[#3c2f00] uppercase tracking-widest text-sm lg:text-base">Enregistrement...</span>
+                  </template>
+                  <template v-else>
+                    <span class="material-symbols-outlined text-sm lg:text-base text-[#3c2f00]">swords</span>
+                    <span class="font-bold text-[#3c2f00] uppercase tracking-widest text-sm lg:text-base">Valider l'activité</span>
+                  </template>
+                </div>
+              </button>
+            </div>
+
           </div>
-        </button>
-      </template>
+        </template>
+      </div>
     </div>
-
-    <ActivitySheet
-      v-if="showSheet"
-      @select="onSelect"
-      @close="showSheet = false"
-    />
 
     <!-- Modale quiz -->
     <div

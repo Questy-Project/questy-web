@@ -29,8 +29,8 @@ const statusLabel = computed(() => {
     :disabled="!isAvailable"
     @click="isAvailable && emit('select', item)"
   >
-    <!-- Emoji -->
-    <span class="text-2xl md:text-3xl md:w-10 md:text-center flex-shrink-0">{{ meta.emoji }}</span>
+    <!-- Icône stat -->
+    <img :src="meta.icon" :alt="meta.label" class="w-8 h-8 md:w-10 md:h-10 object-contain flex-shrink-0" />
 
     <!-- Nom (mobile) / Nom + titre défi (desktop) -->
     <div class="flex flex-col items-center md:items-start md:flex-1 gap-0.5">

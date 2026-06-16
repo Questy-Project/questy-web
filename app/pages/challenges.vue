@@ -74,7 +74,10 @@ async function handleAbandon(sessionId?: string | null) {
 
       <header class="mb-4 md:mb-8 flex items-start justify-between gap-4">
         <div>
-          <h1 class="text-xl md:text-3xl font-bold text-questy-gold" style="font-family: 'Newsreader', serif">⚔️ Défis du jour</h1>
+          <h1 class="text-3xl sm:text-4xl lg:text-5xl font-bold italic text-questy-gold flex items-end gap-2" style="font-family: 'Newsreader', serif">
+            <img src="/images/icons/icon-challenge.png" alt="" class="w-12 h-12 sm:w-14 sm:h-14 lg:w-16 lg:h-16 object-contain" />
+            Défis du jour
+          </h1>
           <p class="text-xs md:text-sm text-questy-light/50 mt-1">❤️❤️❤️ par défi · +1 stat · max 15/mois</p>
         </div>
         <div class="flex flex-col items-end flex-shrink-0 mt-1 gap-0.5">

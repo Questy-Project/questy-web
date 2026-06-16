@@ -51,10 +51,10 @@ const ACTION_LABELS: Record<string, string> = {
 };
 
 const ACTIONS = [
-  { key: 'PHYSICAL_ATTACK', label: '⚔️ Attaque physique' },
-  { key: 'PHYSICAL_BLOCK',  label: '🛡️ Blocage physique' },
-  { key: 'MAGIC_ATTACK',    label: '✨ Attaque magique'   },
-  { key: 'MAGIC_BLOCK',     label: '🔮 Blocage magique'   },
+  { key: 'PHYSICAL_ATTACK', label: 'Attaque physique', icon: '/images/icons/icon-power.png' },
+  { key: 'PHYSICAL_BLOCK',  label: 'Blocage physique', icon: '/images/icons/icon-stamina.png' },
+  { key: 'MAGIC_ATTACK',    label: 'Attaque magique',  icon: '/images/icons/icon-intelligence.png' },
+  { key: 'MAGIC_BLOCK',     label: 'Blocage magique',  icon: '/images/icons/icon-spirit.png' },
 ];
 
 function delay(ms: number): Promise<void> {
@@ -306,6 +306,7 @@ const lastLog = computed(() => turnLogs.value[turnLogs.value.length - 1] ?? null
         }"
         @click="playTurn(action.key)"
       >
+        <img :src="action.icon" :alt="action.label" class="w-5 h-5 object-contain inline-block mr-1.5" />
         {{ action.label }}
       </button>
     </div>
@@ -317,7 +318,7 @@ const lastLog = computed(() => turnLogs.value[turnLogs.value.length - 1] ?? null
   </div>
 </template>
 
-<style>
+<style scoped>
 @keyframes damage-blink {
   0%, 100% { opacity: 1; }
   50%       { opacity: 0.15; }
