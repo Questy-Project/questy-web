@@ -82,6 +82,7 @@ export interface ChallengeCatalog {
 export interface TodayChallenge {
   challenge: ChallengeCatalog;
   alreadyDoneToday: boolean;
+  skippedToday?: boolean;
   monthlyBonus: number;
   atCap: boolean;
   canAfford: boolean;

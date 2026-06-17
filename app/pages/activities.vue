@@ -13,8 +13,6 @@ const partsStore = usePartsStore();
 const bookTitle      = ref('');
 const bookAuthor     = ref('');
 const bookVolume     = ref('');
-const bookDifficulty = ref<'easy' | 'medium' | 'hard'>('easy');
-
 const isReadingActivity = computed(
   () => activitiesStore.selectedActivity?.category === 'Lecture',
 );
@@ -22,11 +20,11 @@ const canSubmitReading = computed(
   () => !isReadingActivity.value || (bookTitle.value.trim() !== '' && bookAuthor.value.trim() !== ''),
 );
 
-const difficultyOptions: { label: string; value: 'easy' | 'medium' | 'hard'; img: string }[] = [
-  { label: 'Facile',    value: 'easy',   img: '/images/icons/intensity-1.png' },
-  { label: 'Moyen',     value: 'medium', img: '/images/icons/intensity-2.png' },
-  { label: 'Difficile', value: 'hard',   img: '/images/icons/intensity-3.png' },
-];
+const INTENSITY_TO_DIFFICULTY: Record<number, 'easy' | 'medium' | 'hard'> = {
+  1: 'easy', 1.15: 'medium', 1.30: 'hard',
+};
+
+const bookDifficulty = computed(() => INTENSITY_TO_DIFFICULTY[activitiesStore.intensity] ?? 'easy');
 
 // Quiz — état
 const showQuizModal    = ref(false);
@@ -38,13 +36,6 @@ const quizLoading      = ref(false);
 const quizError        = ref('');
 const quizResult       = ref<{ score: number; xpGained: number; partsUnlocked: number } | null>(null);
 const chatContainer    = ref<HTMLElement | null>(null);
-
-// Synchronise l'intensité du store avec la difficulté du quiz pour les activités Lecture
-watchEffect(() => {
-  if (isReadingActivity.value) {
-    activitiesStore.intensity = ({ easy: 1, medium: 1.5, hard: 2 } as Record<string, number>)[bookDifficulty.value] ?? 1;
-  }
-});
 
 let timer: ReturnType<typeof setTimeout> | null = null;
 
@@ -60,9 +51,9 @@ const durations = [
 ];
 
 const intensities = [
-  { label: 'Légère',  value: 1,   img: '/images/icons/intensity-1.png' },
-  { label: 'Modérée', value: 1.5, img: '/images/icons/intensity-2.png' },
-  { label: 'Intense', value: 2,   img: '/images/icons/intensity-3.png' },
+  { label: 'Légère',  value: 1,    img: '/images/icons/intensity-1.png' },
+  { label: 'Modérée', value: 1.15, img: '/images/icons/intensity-2.png' },
+  { label: 'Intense', value: 1.30, img: '/images/icons/intensity-3.png' },
 ];
 
 
@@ -89,7 +80,7 @@ async function submit() {
           title:        bookTitle.value,
           author:       bookAuthor.value,
           volume:       bookVolume.value || undefined,
-          difficulty:   bookDifficulty.value,
+          difficulty:   INTENSITY_TO_DIFFICULTY[activitiesStore.intensity] ?? 'easy',
           activityName: activitiesStore.selectedActivity!.name,
           activityId:   activitiesStore.selectedActivity!.id,
           duration:     activitiesStore.duration!,
@@ -199,22 +190,22 @@ function closeResultAndGoHome() {
     style="font-family: 'Be Vietnam Pro', sans-serif; background-image: linear-gradient(rgba(0,0,0,0.50), rgba(0,0,0,0.50)), url('/images/bg-forest.jpg')"
   >
     <!-- Header -->
-    <header class="w-full px-4 sm:px-8 lg:px-16 pt-6 pb-4 border-b border-questy-gold/20">
+    <header class="w-full px-4 sm:px-8 lg:px-16 pt-6 pb-4 lg:pt-3 lg:pb-2 border-b border-questy-gold/20">
       <h1
-        class="text-3xl sm:text-4xl lg:text-5xl font-bold italic text-questy-gold flex items-end gap-2"
+        class="text-3xl sm:text-4xl lg:text-2xl font-bold italic text-questy-gold flex items-end gap-2"
         style="font-family: 'Newsreader', serif"
       >
-        <img src="/images/icons/icon-activities.png" alt="" class="w-12 h-12 sm:w-14 sm:h-14 lg:w-16 lg:h-16 object-contain" />
+        <img src="/images/icons/icon-activities.png" alt="" class="w-12 h-12 sm:w-14 sm:h-14 lg:w-9 lg:h-9 object-contain" />
         Mes Activités
       </h1>
-      <p class="text-xs sm:text-sm lg:text-base text-questy-light/50 uppercase tracking-widest mt-1">
+      <p class="text-xs sm:text-sm lg:text-xs text-questy-light/50 uppercase tracking-widest mt-1">
         Déclare tes efforts, gagne de l'XP
       </p>
     </header>
 
     <!-- Carte formulaire — s'étend sur toute la hauteur disponible -->
-    <div class="flex-1 flex items-center justify-center px-4 sm:px-8 lg:px-16 py-6 lg:py-10">
-      <div class="bg-questy-sheet/70 backdrop-blur-sm border border-questy-gold/30 rounded-xl p-5 sm:p-8 lg:p-10 flex flex-col max-w-2xl lg:max-w-3xl w-full">
+    <div class="flex-1 flex items-center justify-center px-4 sm:px-8 lg:px-16 py-6 lg:py-3">
+      <div class="bg-questy-sheet/70 backdrop-blur-sm border border-questy-gold/30 rounded-xl p-5 sm:p-8 lg:p-4 flex flex-col max-w-2xl lg:max-w-3xl w-full">
 
         <!-- Succès -->
         <div
@@ -234,7 +225,7 @@ function closeResultAndGoHome() {
         </div>
 
         <template v-else>
-          <div class="flex-1 flex flex-col space-y-6 lg:space-y-8">
+          <div class="flex-1 flex flex-col space-y-6 lg:space-y-3">
 
             <!-- Catégorie + Activité -->
             <ActivityCombobox @select="onSelect" />
@@ -244,19 +235,19 @@ function closeResultAndGoHome() {
               <div class="space-y-2">
                 <p class="text-xs lg:text-sm text-questy-gold/70 uppercase tracking-widest font-bold">Titre du livre</p>
                 <input v-model="bookTitle" type="text" placeholder="Ex : Le Seigneur des Anneaux"
-                  class="w-full bg-questy-dark/60 border border-questy-gold/40 px-4 py-3 lg:py-4 text-sm lg:text-base text-questy-light placeholder:text-questy-light/30 focus:outline-none focus:border-questy-gold" />
+                  class="w-full bg-questy-dark/60 border border-questy-gold/40 px-4 py-3 lg:py-2 text-sm lg:text-sm text-questy-light placeholder:text-questy-light/30 focus:outline-none focus:border-questy-gold" />
               </div>
               <div class="space-y-2">
                 <p class="text-xs lg:text-sm text-questy-gold/70 uppercase tracking-widest font-bold">Auteur</p>
                 <input v-model="bookAuthor" type="text" placeholder="Ex : J.R.R. Tolkien"
-                  class="w-full bg-questy-dark/60 border border-questy-gold/40 px-4 py-3 lg:py-4 text-sm lg:text-base text-questy-light placeholder:text-questy-light/30 focus:outline-none focus:border-questy-gold" />
+                  class="w-full bg-questy-dark/60 border border-questy-gold/40 px-4 py-3 lg:py-2 text-sm lg:text-sm text-questy-light placeholder:text-questy-light/30 focus:outline-none focus:border-questy-gold" />
               </div>
               <div class="space-y-2">
                 <p class="text-xs lg:text-sm text-questy-gold/70 uppercase tracking-widest font-bold">
                   Tome / Volume <span class="text-questy-light/30 normal-case font-normal">(optionnel)</span>
                 </p>
                 <input v-model="bookVolume" type="text" placeholder="Ex : Tome 2 — Les Deux Tours"
-                  class="w-full bg-questy-dark/60 border border-questy-gold/40 px-4 py-3 lg:py-4 text-sm lg:text-base text-questy-light placeholder:text-questy-light/30 focus:outline-none focus:border-questy-gold" />
+                  class="w-full bg-questy-dark/60 border border-questy-gold/40 px-4 py-3 lg:py-2 text-sm lg:text-sm text-questy-light placeholder:text-questy-light/30 focus:outline-none focus:border-questy-gold" />
               </div>
             </template>
 
@@ -266,7 +257,7 @@ function closeResultAndGoHome() {
               <div class="grid grid-cols-4 gap-2">
                 <button
                   v-for="d in durations" :key="d.value"
-                  class="py-2 lg:py-3 text-sm lg:text-base font-medium border transition-colors"
+                  class="py-2 lg:py-1 text-sm font-medium border transition-colors"
                   :class="activitiesStore.duration === d.value
                     ? 'bg-questy-gold/20 border-questy-gold text-questy-gold'
                     : 'bg-questy-dark/60 border-questy-gold/20 text-questy-light/60'"
@@ -278,26 +269,19 @@ function closeResultAndGoHome() {
             <!-- Intensité / Difficulté -->
             <div class="space-y-2">
               <p class="text-xs lg:text-sm text-questy-gold/70 uppercase tracking-widest font-bold">
-                {{ isReadingActivity ? 'Difficulté du quiz' : 'Intensité' }}
+                Intensité
               </p>
               <div class="grid grid-cols-3 gap-2">
-                <template v-if="isReadingActivity">
-                  <button v-for="d in difficultyOptions" :key="d.value" class="flex justify-center transition-all" @click="bookDifficulty = d.value">
-                    <img :src="d.img" :alt="d.label" class="w-16 h-16 lg:w-20 lg:h-20 object-contain rounded-full transition-all" :class="bookDifficulty === d.value ? 'opacity-100 scale-110' : 'opacity-40'" />
-                  </button>
-                </template>
-                <template v-else>
-                  <button v-for="i in intensities" :key="i.value" class="flex justify-center transition-all" @click="activitiesStore.intensity = i.value">
-                    <img :src="i.img" :alt="i.label" class="w-16 h-16 lg:w-20 lg:h-20 object-contain rounded-full transition-all" :class="activitiesStore.intensity === i.value ? 'opacity-100 scale-110' : 'opacity-40'" />
-                  </button>
-                </template>
+                <button v-for="i in intensities" :key="i.value" class="flex justify-center transition-all" @click="activitiesStore.intensity = i.value">
+                  <img :src="i.img" :alt="i.label" class="w-16 h-16 lg:w-11 lg:h-11 object-contain rounded-full transition-all" :class="activitiesStore.intensity === i.value ? 'opacity-100 scale-110' : 'opacity-40'" />
+                </button>
               </div>
             </div>
 
             <!-- Aperçu gains -->
             <div
               v-if="!isReadingActivity && activitiesStore.duration && activitiesStore.intensity"
-              class="relative bg-questy-dark/60 border border-questy-gold/40 px-4 py-3 lg:px-6 lg:py-4"
+              class="relative bg-questy-dark/60 border border-questy-gold/40 px-4 py-3 lg:px-3 lg:py-2"
             >
               <span class="absolute top-[-3px] left-[-3px] w-5 h-5 border-t-2 border-l-2 border-questy-gold" />
               <span class="absolute top-[-3px] right-[-3px] w-5 h-5 border-t-2 border-r-2 border-questy-gold" />
@@ -323,7 +307,7 @@ function closeResultAndGoHome() {
                 @click="submit"
               >
                 <div class="absolute inset-0 bg-gradient-to-b from-questy-gold to-[#d4af37]" />
-                <div class="relative px-6 py-4 lg:py-5 flex items-center justify-center gap-2 border-b-4 border-[#554300]/40">
+                <div class="relative px-6 py-4 lg:py-2 flex items-center justify-center gap-2 border-b-4 border-[#554300]/40">
                   <template v-if="activitiesStore.loading">
                     <span class="font-bold text-[#3c2f00] uppercase tracking-widest text-sm lg:text-base">Enregistrement...</span>
                   </template>
