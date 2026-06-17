@@ -3,7 +3,7 @@ import type { TodayChallenge } from '~/types';
 import { useApi } from '~/composables/useApi';
 
 const props = defineProps<{ item: TodayChallenge; color: string }>();
-const emit  = defineEmits<{ result: [success: boolean]; abandon: [sessionId: string | null] }>();
+const emit  = defineEmits<{ result: [success: boolean]; abandon: [sessionId: string | null]; 'session-started': [sessionId: string] }>();
 
 const messages  = ref<{ role: string; content: string }[]>([]);
 const sessionId = ref<string | null>(null);
@@ -56,6 +56,7 @@ async function start() {
       body: { stat: props.item.challenge.stat },
     });
     sessionId.value = res.sessionId;
+    emit('session-started', res.sessionId);
     messages.value.push({ role: 'assistant', content: res.message });
     started.value = true;
   } finally {
@@ -74,7 +75,10 @@ async function sendAnswer(answer: string) {
       body: { sessionId: sessionId.value, message: answer },
     });
     messages.value.push({ role: 'assistant', content: res.message });
-    if (res.type === 'result') emit('result', res.success ?? false);
+    if (res.type === 'result') {
+      await new Promise(resolve => setTimeout(resolve, 2500));
+      emit('result', res.success ?? false);
+    }
   } finally {
     loading.value = false;
   }

@@ -11,7 +11,7 @@ const hearts = computed(() =>
     <span
       v-for="(full, i) in hearts"
       :key="i"
-      class="text-base lg:text-2xl leading-none"
+      class="text-base lg:text-lg leading-none"
     >
       {{ full ? "❤️" : "🤍" }}
     </span>
