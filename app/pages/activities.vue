@@ -13,8 +13,6 @@ const partsStore = usePartsStore();
 const bookTitle      = ref('');
 const bookAuthor     = ref('');
 const bookVolume     = ref('');
-const bookDifficulty = ref<'easy' | 'medium' | 'hard'>('easy');
-
 const isReadingActivity = computed(
   () => activitiesStore.selectedActivity?.category === 'Lecture',
 );
@@ -22,11 +20,9 @@ const canSubmitReading = computed(
   () => !isReadingActivity.value || (bookTitle.value.trim() !== '' && bookAuthor.value.trim() !== ''),
 );
 
-const difficultyOptions: { label: string; value: 'easy' | 'medium' | 'hard'; img: string }[] = [
-  { label: 'Facile',    value: 'easy',   img: '/images/icons/intensity-1.png' },
-  { label: 'Moyen',     value: 'medium', img: '/images/icons/intensity-2.png' },
-  { label: 'Difficile', value: 'hard',   img: '/images/icons/intensity-3.png' },
-];
+const INTENSITY_TO_DIFFICULTY: Record<number, 'easy' | 'medium' | 'hard'> = {
+  1: 'easy', 2: 'medium', 3: 'hard',
+};
 
 // Quiz — état
 const showQuizModal    = ref(false);
@@ -38,13 +34,6 @@ const quizLoading      = ref(false);
 const quizError        = ref('');
 const quizResult       = ref<{ score: number; xpGained: number; partsUnlocked: number } | null>(null);
 const chatContainer    = ref<HTMLElement | null>(null);
-
-// Synchronise l'intensité du store avec la difficulté du quiz pour les activités Lecture
-watchEffect(() => {
-  if (isReadingActivity.value) {
-    activitiesStore.intensity = ({ easy: 1, medium: 1.5, hard: 2 } as Record<string, number>)[bookDifficulty.value] ?? 1;
-  }
-});
 
 let timer: ReturnType<typeof setTimeout> | null = null;
 
@@ -89,7 +78,7 @@ async function submit() {
           title:        bookTitle.value,
           author:       bookAuthor.value,
           volume:       bookVolume.value || undefined,
-          difficulty:   bookDifficulty.value,
+          difficulty:   INTENSITY_TO_DIFFICULTY[activitiesStore.intensity] ?? 'easy',
           activityName: activitiesStore.selectedActivity!.name,
           activityId:   activitiesStore.selectedActivity!.id,
           duration:     activitiesStore.duration!,
@@ -278,19 +267,12 @@ function closeResultAndGoHome() {
             <!-- Intensité / Difficulté -->
             <div class="space-y-2">
               <p class="text-xs lg:text-sm text-questy-gold/70 uppercase tracking-widest font-bold">
-                {{ isReadingActivity ? 'Difficulté du quiz' : 'Intensité' }}
+                Intensité
               </p>
               <div class="grid grid-cols-3 gap-2">
-                <template v-if="isReadingActivity">
-                  <button v-for="d in difficultyOptions" :key="d.value" class="flex justify-center transition-all" @click="bookDifficulty = d.value">
-                    <img :src="d.img" :alt="d.label" class="w-16 h-16 lg:w-20 lg:h-20 object-contain rounded-full transition-all" :class="bookDifficulty === d.value ? 'opacity-100 scale-110' : 'opacity-40'" />
-                  </button>
-                </template>
-                <template v-else>
-                  <button v-for="i in intensities" :key="i.value" class="flex justify-center transition-all" @click="activitiesStore.intensity = i.value">
-                    <img :src="i.img" :alt="i.label" class="w-16 h-16 lg:w-20 lg:h-20 object-contain rounded-full transition-all" :class="activitiesStore.intensity === i.value ? 'opacity-100 scale-110' : 'opacity-40'" />
-                  </button>
-                </template>
+                <button v-for="i in intensities" :key="i.value" class="flex justify-center transition-all" @click="activitiesStore.intensity = i.value">
+                  <img :src="i.img" :alt="i.label" class="w-16 h-16 lg:w-20 lg:h-20 object-contain rounded-full transition-all" :class="activitiesStore.intensity === i.value ? 'opacity-100 scale-110' : 'opacity-40'" />
+                </button>
               </div>
             </div>
 

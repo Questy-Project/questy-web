@@ -13,6 +13,7 @@ const isAvailable = computed(
 
 const statusLabel = computed(() => {
   if (props.item.atCap)            return 'Plafond atteint';
+  if (props.item.skippedToday)     return 'Quitté aujourd\'hui';
   if (props.item.alreadyDoneToday) return 'Déjà relevé';
   if (!props.item.canAfford)       return 'Pas assez de ❤️';
   return `+${props.item.monthlyBonus}/15 ce mois`;
@@ -40,7 +41,7 @@ const statusLabel = computed(() => {
 
     <!-- Coût + statut -->
     <div class="flex flex-col items-center md:items-end gap-0.5 md:flex-shrink-0">
-      <span class="text-xs text-gray-400">❤️❤️❤️</span>
+      <span class="text-xs text-gray-400">❤️</span>
       <span class="text-xs" :class="isAvailable ? 'text-questy-gold' : 'text-gray-500'">
         {{ statusLabel }}
       </span>
