@@ -64,8 +64,12 @@ async function handleSkip() {
 
 async function handlePhysicalDone() {
   if (!selected.value) return;
-  await useApi(`/challenges/${selected.value.challenge.id}/complete`, { method: 'POST' });
-  resultState.value = { show: true, success: true };
+  try {
+    await useApi(`/challenges/${selected.value.challenge.id}/complete`, { method: 'POST' });
+    resultState.value = { show: true, success: true };
+  } catch {
+    resultState.value = { show: true, success: false };
+  }
   await Promise.all([challengesStore.fetchToday(), partsStore.fetchParts()]);
 }
 
@@ -91,15 +95,15 @@ async function handleAbandon(sessionId?: string | null) {
 
 <template>
   <div
-    class="min-h-screen text-white pb-24 flex flex-col bg-cover bg-center bg-no-repeat"
+    class="min-h-screen text-white pb-24 lg:pb-4 flex flex-col bg-cover bg-center bg-no-repeat"
     style="background-image: linear-gradient(rgba(0,0,0,0.60), rgba(0,0,0,0.60)), url('/images/bg-challenge.png')"
   >
-    <div class="w-full max-w-lg md:max-w-3xl mx-auto px-4 md:px-8 py-6 flex-1 flex flex-col">
+    <div class="w-full max-w-lg md:max-w-3xl mx-auto px-4 md:px-8 py-6 lg:py-2 flex-1 flex flex-col">
 
-      <header class="mb-4 md:mb-8 flex items-start justify-between gap-4">
+      <header class="mb-4 md:mb-8 lg:mb-2 flex items-start justify-between gap-4">
         <div>
-          <h1 class="text-3xl sm:text-4xl lg:text-5xl font-bold italic text-questy-gold flex items-end gap-2" style="font-family: 'Newsreader', serif">
-            <img src="/images/icons/icon-challenge.png" alt="" class="w-12 h-12 sm:w-14 sm:h-14 lg:w-16 lg:h-16 object-contain" />
+          <h1 class="text-3xl sm:text-4xl lg:text-2xl font-bold italic text-questy-gold flex items-end gap-2" style="font-family: 'Newsreader', serif">
+            <img src="/images/icons/icon-challenge.png" alt="" class="w-12 h-12 sm:w-14 sm:h-14 lg:w-9 lg:h-9 object-contain" />
             Défis du jour
           </h1>
           <p class="text-xs md:text-sm text-questy-light/50 mt-1">❤️ par défi · +1 stat · max 15/mois</p>

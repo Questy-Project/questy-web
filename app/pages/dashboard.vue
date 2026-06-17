@@ -43,13 +43,13 @@ onMounted(async () => {
     <div v-else-if="avatar" class="flex-1 flex flex-col w-full">
 
       <!-- HAUT : Header + XP -->
-      <div class="w-full px-4 sm:px-8 lg:px-16 pt-6 sm:pt-8 space-y-4 max-w-5xl lg:max-w-none">
-        <header class="border-b border-questy-gold/20 pb-4">
+      <div class="w-full px-4 sm:px-8 lg:px-16 pt-6 sm:pt-8 lg:pt-3 space-y-4 lg:space-y-2 max-w-5xl lg:max-w-none">
+        <header class="border-b border-questy-gold/20 pb-4 lg:pb-2">
           <h1
-            class="text-3xl sm:text-4xl lg:text-5xl font-bold italic text-questy-gold flex items-end gap-2"
+            class="text-3xl sm:text-4xl lg:text-2xl font-bold italic text-questy-gold flex items-end gap-2"
             style="font-family: 'Newsreader', serif"
           >
-            <img src="/images/icons/icon-acceuil.png" alt="" class="w-12 h-12 sm:w-14 sm:h-14 lg:w-16 lg:h-16 object-contain" />
+            <img src="/images/icons/icon-acceuil.png" alt="" class="w-12 h-12 sm:w-14 sm:h-14 lg:w-9 lg:h-9 object-contain" />
             Auberge
           </h1>
         </header>
@@ -80,10 +80,10 @@ onMounted(async () => {
       </div>
 
       <!-- MILIEU : Layout 3 colonnes desktop / portrait + stats mobile -->
-      <div class="flex-1 flex flex-col lg:flex-row items-center justify-center py-6 sm:py-8 px-4 sm:px-8 lg:px-16 gap-6 lg:gap-10 xl:gap-16">
+      <div class="flex-1 flex flex-col lg:flex-row items-center justify-center py-6 sm:py-8 lg:py-3 px-4 sm:px-8 lg:px-16 gap-6 lg:gap-6 xl:gap-10">
 
         <!-- Stats gauche (Force, Agilité, Endurance) — desktop uniquement -->
-        <div class="hidden lg:flex flex-col justify-center gap-6 xl:gap-8 w-56 xl:w-72 shrink-0">
+        <div class="hidden lg:flex flex-col justify-center gap-6 lg:gap-3 xl:gap-8 w-56 lg:w-44 xl:w-72 shrink-0">
           <AvatarStatBar large align="right" label="Force"     :value="avatar.strength"  :max-value="100" :color="STAT_COLOR_MAP.strength" />
           <AvatarStatBar large align="right" label="Agilité"   :value="avatar.agility"   :max-value="100" :color="STAT_COLOR_MAP.agility" />
           <AvatarStatBar large align="right" label="Endurance" :value="avatar.endurance" :max-value="100" :color="STAT_COLOR_MAP.endurance" />
@@ -100,7 +100,7 @@ onMounted(async () => {
           <span class="absolute bottom-[-3px] left-[-3px] w-5 h-5 border-b-2 border-l-2 border-questy-gold" />
           <span class="absolute bottom-[-3px] right-[-3px] w-5 h-5 border-b-2 border-r-2 border-questy-gold" />
           <div class="text-[9px] lg:text-[11px] text-questy-gold/50 uppercase tracking-widest font-bold">{{ authStore.user?.pseudo }}</div>
-          <div class="w-48 h-48 lg:w-56 lg:h-56 xl:w-64 xl:h-64 flex items-center justify-center">
+          <div class="w-48 h-48 lg:w-40 lg:h-40 xl:w-48 xl:h-48 flex items-center justify-center">
             <div class="scale-[3]">
               <AvatarCanvas
                 :silhouette="avatar.silhouette"
@@ -115,7 +115,7 @@ onMounted(async () => {
         </div>
 
         <!-- Stats droite (Intelligence, Esprit, Vitalité) — desktop uniquement -->
-        <div class="hidden lg:flex flex-col justify-center gap-6 xl:gap-8 w-56 xl:w-72 shrink-0">
+        <div class="hidden lg:flex flex-col justify-center gap-6 lg:gap-3 xl:gap-8 w-56 lg:w-44 xl:w-72 shrink-0">
           <AvatarStatBar large label="Intelligence" :value="avatar.intelligence" :max-value="100" :color="STAT_COLOR_MAP.intelligence" />
           <AvatarStatBar large label="Esprit"       :value="avatar.spirit"       :max-value="100" :color="STAT_COLOR_MAP.spirit" />
           <AvatarStatBar large label="Vitalité"     :value="avatar.vitality"     :max-value="100" :color="STAT_COLOR_MAP.vitality" />
@@ -134,20 +134,20 @@ onMounted(async () => {
       </div>
 
       <!-- BAS : CTAs -->
-      <div class="w-full px-4 sm:px-8 lg:px-16 pb-6 sm:pb-10 grid grid-cols-2 gap-3 sm:gap-4 lg:gap-6">
+      <div class="w-full px-4 sm:px-8 lg:px-16 pb-6 sm:pb-10 lg:pb-3 grid grid-cols-2 gap-3 sm:gap-4 lg:gap-3">
         <button
           class="relative overflow-hidden active:translate-y-0.5 transition-transform"
           @click="navigateTo('/activities')"
         >
           <div class="absolute inset-0 bg-gradient-to-b from-questy-gold to-[#d4af37]" />
-          <div class="relative px-4 py-3 sm:py-4 lg:py-5 flex items-center justify-center gap-2 lg:gap-3 border-b-4 border-[#554300]/40">
+          <div class="relative px-4 py-3 sm:py-4 lg:py-2 flex items-center justify-center gap-2 lg:gap-3 border-b-4 border-[#554300]/40">
             <img src="/images/icons/icon-activities.png" alt="Activités" class="w-6 h-6 lg:w-8 lg:h-8 object-contain" />
             <span class="font-bold text-[#3c2f00] uppercase tracking-widest text-xs sm:text-sm lg:text-base">Activité</span>
           </div>
         </button>
         <NuxtLink
           to="/challenges"
-          class="bg-questy-sheet/90 border border-questy-gold/20 text-questy-gold font-bold text-xs sm:text-sm lg:text-base uppercase tracking-widest flex items-center justify-center gap-2 lg:gap-3 py-3 sm:py-4 lg:py-5"
+          class="bg-questy-sheet/90 border border-questy-gold/20 text-questy-gold font-bold text-xs sm:text-sm lg:text-sm uppercase tracking-widest flex items-center justify-center gap-2 lg:gap-3 py-3 sm:py-4 lg:py-2"
         >
           <img src="/images/icons/icon-challenge.png" alt="Défis" class="w-6 h-6 lg:w-8 lg:h-8 object-contain" />
           Défis

@@ -20,8 +20,10 @@ export const useActivitiesStore = defineStore('activities', () => {
   });
 
   const partsPreview = computed(() => {
-    if (!duration.value) return 0;
-    return duration.value <= 30 ? 2 : duration.value <= 60 ? 4 : 6;
+    if (!duration.value || !intensity.value) return 0;
+    const INTENSITY_PARTS: Record<number, number> = { 1: 1, 1.15: 2, 1.30: 3 };
+    const partsByDuration = duration.value <= 30 ? 1 : duration.value <= 60 ? 2 : 3;
+    return partsByDuration + (INTENSITY_PARTS[intensity.value] ?? 1);
   });
 
   const canSubmit = computed(() => {

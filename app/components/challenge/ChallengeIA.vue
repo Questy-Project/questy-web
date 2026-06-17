@@ -75,7 +75,10 @@ async function sendAnswer(answer: string) {
       body: { sessionId: sessionId.value, message: answer },
     });
     messages.value.push({ role: 'assistant', content: res.message });
-    if (res.type === 'result') emit('result', res.success ?? false);
+    if (res.type === 'result') {
+      await new Promise(resolve => setTimeout(resolve, 2500));
+      emit('result', res.success ?? false);
+    }
   } finally {
     loading.value = false;
   }
