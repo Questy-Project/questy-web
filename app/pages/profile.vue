@@ -370,6 +370,17 @@ onMounted(async () => {
             Se déconnecter
           </button>
         </div>
+
+        <!-- Liens légaux -->
+        <div class="flex justify-center gap-6 pt-2 pb-4 text-xs text-[#8a7f6e]">
+          <NuxtLink to="/cgu" class="hover:text-questy-gold transition-colors underline underline-offset-2">
+            CGU
+          </NuxtLink>
+          <NuxtLink to="/rgpd" class="hover:text-questy-gold transition-colors underline underline-offset-2">
+            Politique de confidentialité
+          </NuxtLink>
+        </div>
+
       </div>
     </div>
 
