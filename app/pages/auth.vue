@@ -227,6 +227,14 @@ function switchMode(newMode: "login" | "register") {
             <!-- Message d'erreur -->
             <p v-if="error" class="text-red-400 text-sm text-center">{{ error }}</p>
 
+            <!-- Liens CGU / RGPD -->
+            <p class="text-xs text-center text-[#8a7f6e]">
+              En créant un compte, vous acceptez nos
+              <NuxtLink to="/cgu" target="_blank" class="text-questy-gold underline hover:text-[#e9c349] transition-colors">CGU</NuxtLink>
+              et notre
+              <NuxtLink to="/rgpd" target="_blank" class="text-questy-gold underline hover:text-[#e9c349] transition-colors">Politique de confidentialité</NuxtLink>.
+            </p>
+
             <!-- Bouton de soumission -->
             <button
               type="submit"
