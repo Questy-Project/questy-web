@@ -37,7 +37,7 @@ async function startCombat() {
 
 async function handleResult() {
   combatData.value = null; // retour à la vue principale
-  await Promise.all([tournamentStore.fetchStatus(), tournamentStore.fetchRanking()]);
+  await Promise.all([tournamentStore.fetchStatus(), tournamentStore.fetchRanking(), rankStore.fetchRank()]);
 }
 </script>
 
