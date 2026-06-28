@@ -155,6 +155,13 @@ export interface TournamentStatus {
 
 export type RankTier = 'BRONZE' | 'SILVER' | 'GOLD' | 'LEGEND';
 
+export interface MonthlyLeaderboardEntry {
+  userId: string;
+  pseudo: string;
+  totalPoints: number;
+  tier: RankTier;
+}
+
 export interface MonthlyRankResponse {
   tier: RankTier;
   totalPoints: number;

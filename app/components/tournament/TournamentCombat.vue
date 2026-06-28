@@ -289,8 +289,8 @@ const lastLog = computed(() => turnLogs.value[turnLogs.value.length - 1] ?? null
         {{ combatData.opponentPseudo }} utilise <strong class="text-white">{{ ACTION_LABELS[lastLog.opponentAction] ?? lastLog.opponentAction }}</strong>
         <span v-if="lastLog.opponentCrit" class="text-questy-gold"> (CRITIQUE !)</span>
       </p>
-      <p v-if="lastLog.playerDamageDealt > 0" class="text-green-400">Tu infliges {{ lastLog.playerDamageDealt }} dégâts.</p>
-      <p v-if="lastLog.opponentDamageDealt > 0" class="text-red-400">Tu subis {{ lastLog.opponentDamageDealt }} dégâts.</p>
+      <p v-if="lastLog.playerDamageDealt > 0" class="text-green-400">Tu infliges {{ lastLog.playerDamageDealt }} dégât{{ lastLog.playerDamageDealt > 1 ? 's' : '' }}.</p>
+      <p v-if="lastLog.opponentDamageDealt > 0" class="text-red-400">Tu subis {{ lastLog.opponentDamageDealt }} dégât{{ lastLog.opponentDamageDealt > 1 ? 's' : '' }}.</p>
     </div>
 
     <!-- ── Boutons d'action ── -->

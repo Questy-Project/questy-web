@@ -115,8 +115,8 @@
           <h2 class="text-lg font-semibold text-[#e9d5a0] mb-2">10. Contact</h2>
           <p>
             Pour toute question relative aux présentes CGU :
-            <a href="mailto:Loic.Leclercq@keiro.be" class="text-questy-gold underline hover:text-[#e9c349]">
-              Loic.Leclercq@keiro.be
+            <a href="mailto:lleclercq@outlook.com" class="text-questy-gold underline hover:text-[#e9c349]">
+              lleclercq@outlook.com
             </a>
           </p>
         </div>

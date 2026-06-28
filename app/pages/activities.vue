@@ -221,7 +221,7 @@ function closeResultAndGoHome() {
             +{{ activitiesStore.lastLog?.xpGained }} XP · +{{ activitiesStore.lastLog?.partsUnlocked }}
             <span class="material-symbols-outlined text-sm" style="font-variation-settings:'FILL' 1; color: #f2ca50">favorite</span>
           </p>
-          <p class="text-questy-light/40 text-xs mt-2">Retour au dashboard...</p>
+          <p class="text-questy-light/40 text-xs mt-2">Retour à l'Auberge...</p>
         </div>
 
         <template v-else>
@@ -272,8 +272,25 @@ function closeResultAndGoHome() {
                 Intensité
               </p>
               <div class="grid grid-cols-3 gap-2">
-                <button v-for="i in intensities" :key="i.value" class="flex justify-center transition-all" @click="activitiesStore.intensity = i.value">
-                  <img :src="i.img" :alt="i.label" class="w-16 h-16 lg:w-11 lg:h-11 object-contain rounded-full transition-all" :class="activitiesStore.intensity === i.value ? 'opacity-100 scale-110' : 'opacity-40'" />
+                <button
+                  v-for="i in intensities" :key="i.value"
+                  class="flex flex-col items-center gap-1 py-2 rounded-lg border transition-all"
+                  :class="activitiesStore.intensity === i.value
+                    ? 'bg-questy-gold/10 border-questy-gold/50'
+                    : 'border-transparent opacity-60'"
+                  @click="activitiesStore.intensity = i.value"
+                >
+                  <img
+                    :src="i.img" :alt="i.label"
+                    class="w-16 h-16 lg:w-11 lg:h-11 object-contain rounded-full transition-all"
+                    :class="activitiesStore.intensity === i.value ? 'scale-110' : ''"
+                  />
+                  <span
+                    class="text-xs font-medium"
+                    :class="activitiesStore.intensity === i.value ? 'text-questy-gold' : 'text-questy-light/60'"
+                  >
+                    {{ i.label }}
+                  </span>
                 </button>
               </div>
             </div>

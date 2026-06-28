@@ -32,12 +32,12 @@ const statusLabel = computed(() => {
     @click="isAvailable && emit('select', item)"
   >
     <!-- Icône stat -->
-    <img :src="meta.icon" :alt="meta.label" class="w-8 h-8 md:w-10 md:h-10 lg:w-7 lg:h-7 object-contain flex-shrink-0" />
+    <img :src="meta.icon" :alt="meta.label" class="w-10 h-10 md:w-10 md:h-10 lg:w-7 lg:h-7 object-contain flex-shrink-0" />
 
     <!-- Nom (mobile) / Nom + titre défi (desktop) -->
     <div class="flex flex-col items-center md:items-start md:flex-1 gap-0.5">
-      <span class="text-xs md:text-sm font-bold" :style="{ color: meta.color }">{{ meta.label }}</span>
-      <span class="hidden md:block text-xs text-questy-light/60 truncate max-w-xs">{{ item.challenge.title }}</span>
+      <span class="text-sm font-bold" :style="{ color: meta.color }">{{ meta.label }}</span>
+      <span class="text-xs text-questy-light/60 line-clamp-2 text-center md:text-left">{{ item.challenge.title }}</span>
     </div>
 
     <!-- Coût + statut -->

@@ -1,8 +1,18 @@
 <script setup lang="ts">
-import type { WeeklyRankEntry } from '~/types';
+import type { WeeklyRankEntry, RankTier } from '~/types';
 import { useAuthStore } from '~/stores/auth';
 
-const props  = defineProps<{ ranking: WeeklyRankEntry[] }>();
+const RANK_ICON: Record<RankTier, string> = {
+  BRONZE: '/images/rank-bronze.png',
+  SILVER: '/images/rank-silver.png',
+  GOLD:   '/images/rank-gold.png',
+  LEGEND: '/images/rank-legend.png',
+};
+
+const props  = defineProps<{
+  ranking: WeeklyRankEntry[];
+  tierMap?: Record<string, RankTier>;
+}>();
 const authStore = useAuthStore();
 
 const PAGE_SIZE = 10;
@@ -63,6 +73,12 @@ function goTo(page: number) {
         >
           {{ (currentPage - 1) * PAGE_SIZE + i + 1 }}
         </span>
+        <img
+          v-if="tierMap?.[entry.userId]"
+          :src="RANK_ICON[tierMap[entry.userId]]"
+          alt=""
+          class="w-5 h-5 object-contain shrink-0 mx-1"
+        />
         <span class="flex-1 truncate" :class="entry.userId === authStore.user?.id ? 'text-questy-gold font-bold' : 'text-gray-200'">
           {{ entry.pseudo }}
           <span v-if="entry.userId === authStore.user?.id" class="text-[10px] text-questy-gold/60 ml-1">← toi</span>
