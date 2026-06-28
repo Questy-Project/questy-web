@@ -80,6 +80,9 @@ async function startCombat() {
 async function handleResult() {
   combatData.value = null; // retour à la vue principale
   await Promise.all([tournamentStore.fetchStatus(), tournamentStore.fetchRanking(), rankStore.fetchRank()]);
+  try {
+    monthlyLeaderboard.value = await useApi<MonthlyLeaderboardEntry[]>('/rank/leaderboard');
+  } catch { /* endpoint indisponible */ }
 }
 </script>
 
