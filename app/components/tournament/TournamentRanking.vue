@@ -76,6 +76,7 @@ function goTo(page: number) {
         <img
           v-if="tierMap?.[entry.userId]"
           :src="RANK_ICON[tierMap[entry.userId]]"
+          alt=""
           class="w-5 h-5 object-contain shrink-0 mx-1"
         />
         <span class="flex-1 truncate" :class="entry.userId === authStore.user?.id ? 'text-questy-gold font-bold' : 'text-gray-200'">

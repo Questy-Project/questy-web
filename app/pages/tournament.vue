@@ -25,6 +25,27 @@ const myMonthlyRank = computed(() => {
   return idx === -1 ? null : idx + 1;
 });
 
+const MONTHLY_PAGE_SIZE = 10;
+const monthlyCurrentPage = ref(1);
+const monthlyTotalPages  = computed(() => Math.ceil(monthlyLeaderboard.value.length / MONTHLY_PAGE_SIZE));
+const monthlyPage        = computed(() =>
+  monthlyLeaderboard.value.slice(
+    (monthlyCurrentPage.value - 1) * MONTHLY_PAGE_SIZE,
+    monthlyCurrentPage.value * MONTHLY_PAGE_SIZE,
+  )
+);
+const myMonthlyPage = computed(() =>
+  myMonthlyRank.value === null ? null : Math.ceil(myMonthlyRank.value / MONTHLY_PAGE_SIZE)
+);
+
+function goToMonthlyPage(p: number) {
+  monthlyCurrentPage.value = Math.min(Math.max(p, 1), monthlyTotalPages.value);
+}
+
+watch(monthlyLeaderboard, () => {
+  if (myMonthlyPage.value) monthlyCurrentPage.value = myMonthlyPage.value;
+}, { immediate: true });
+
 const RANK_ICON: Record<RankTier, string> = {
   BRONZE: '/images/rank-bronze.png',
   SILVER: '/images/rank-silver.png',
@@ -171,24 +192,49 @@ async function handleResult() {
               <div v-if="monthlyLeaderboard.length === 0" class="text-questy-light/50 text-sm text-center py-4">
                 Aucun combat ce mois.
               </div>
-              <div v-else class="space-y-1.5">
-                <div
-                  v-for="(entry, i) in monthlyLeaderboard"
-                  :key="entry.userId"
-                  class="flex items-center gap-2 rounded-lg px-3 py-2 text-sm"
-                  :class="entry.userId === authStore.user?.id
-                    ? 'bg-questy-gold/20 border border-questy-gold/50'
-                    : 'bg-gray-800/60'"
-                >
-                  <span class="font-bold w-6 shrink-0" :class="i < 3 ? 'text-questy-gold' : 'text-gray-500'">{{ i + 1 }}</span>
-                  <img :src="RANK_ICON[entry.tier]" class="w-5 h-5 object-contain shrink-0" />
-                  <span class="flex-1 truncate" :class="entry.userId === authStore.user?.id ? 'text-questy-gold font-bold' : 'text-gray-200'">
-                    {{ entry.pseudo }}
-                    <span v-if="entry.userId === authStore.user?.id" class="text-[10px] text-questy-gold/60 ml-1">← toi</span>
-                  </span>
-                  <span class="font-bold text-questy-gold shrink-0">{{ entry.totalPoints }} pts</span>
+              <template v-else>
+                <div class="space-y-1.5">
+                  <div
+                    v-for="(entry, i) in monthlyPage"
+                    :key="entry.userId"
+                    class="flex items-center gap-2 rounded-lg px-3 py-2 text-sm"
+                    :class="entry.userId === authStore.user?.id
+                      ? 'bg-questy-gold/20 border border-questy-gold/50'
+                      : 'bg-gray-800/60'"
+                  >
+                    <span class="font-bold w-6 shrink-0" :class="(monthlyCurrentPage - 1) * MONTHLY_PAGE_SIZE + i + 1 <= 3 ? 'text-questy-gold' : 'text-gray-500'">
+                      {{ (monthlyCurrentPage - 1) * MONTHLY_PAGE_SIZE + i + 1 }}
+                    </span>
+                    <img :src="RANK_ICON[entry.tier]" alt="" class="w-5 h-5 object-contain shrink-0" />
+                    <span class="flex-1 truncate" :class="entry.userId === authStore.user?.id ? 'text-questy-gold font-bold' : 'text-gray-200'">
+                      {{ entry.pseudo }}
+                      <span v-if="entry.userId === authStore.user?.id" class="text-[10px] text-questy-gold/60 ml-1">← toi</span>
+                    </span>
+                    <span class="font-bold text-questy-gold shrink-0">{{ entry.totalPoints }} pts</span>
+                  </div>
                 </div>
-              </div>
+
+                <div v-if="monthlyTotalPages > 1" class="flex items-center justify-between mt-3">
+                  <button
+                    :disabled="monthlyCurrentPage === 1"
+                    class="px-3 py-1 text-xs rounded-lg bg-gray-800/60 text-gray-400 disabled:opacity-30 hover:bg-gray-700/60 transition"
+                    @click="goToMonthlyPage(monthlyCurrentPage - 1)"
+                  >← Préc.</button>
+                  <div class="flex items-center gap-1">
+                    <button
+                      v-if="myMonthlyPage && myMonthlyPage !== monthlyCurrentPage"
+                      class="px-2 py-1 text-[10px] rounded-lg bg-questy-gold/20 text-questy-gold border border-questy-gold/40 hover:bg-questy-gold/30 transition"
+                      @click="goToMonthlyPage(myMonthlyPage)"
+                    >Me voir</button>
+                    <span class="text-xs text-gray-500">{{ monthlyCurrentPage }} / {{ monthlyTotalPages }}</span>
+                  </div>
+                  <button
+                    :disabled="monthlyCurrentPage === monthlyTotalPages"
+                    class="px-3 py-1 text-xs rounded-lg bg-gray-800/60 text-gray-400 disabled:opacity-30 hover:bg-gray-700/60 transition"
+                    @click="goToMonthlyPage(monthlyCurrentPage + 1)"
+                  >Suiv. →</button>
+                </div>
+              </template>
             </div>
           </div>
         </div>
