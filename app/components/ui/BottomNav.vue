@@ -3,7 +3,7 @@ const route = useRoute();
 const authStore = useAuthStore();
 
 const allTabs = [
-  { label: 'Accueil',   img: '/images/icons/icon-acceuil.png',    path: '/dashboard' },
+  { label: 'Auberge',   img: '/images/icons/icon-acceuil.png',    path: '/dashboard' },
   { label: 'Activités', img: '/images/icons/icon-activities.png', path: '/activities' },
   { label: 'Défis',     img: '/images/icons/icon-challenge.png',  path: '/challenges' },
   { label: 'Tournoi',   img: '/images/icons/icon-tournament.png', path: '/tournament' },

@@ -145,13 +145,16 @@ onMounted(async () => {
             <span class="font-bold text-[#3c2f00] uppercase tracking-widest text-xs sm:text-sm lg:text-base">Activité</span>
           </div>
         </button>
-        <NuxtLink
-          to="/challenges"
-          class="bg-questy-sheet/90 border border-questy-gold/20 text-questy-gold font-bold text-xs sm:text-sm lg:text-sm uppercase tracking-widest flex items-center justify-center gap-2 lg:gap-3 py-3 sm:py-4 lg:py-2"
+        <button
+          class="relative overflow-hidden active:translate-y-0.5 transition-transform"
+          @click="navigateTo('/challenges')"
         >
-          <img src="/images/icons/icon-challenge.png" alt="Défis" class="w-6 h-6 lg:w-8 lg:h-8 object-contain" />
-          Défis
-        </NuxtLink>
+          <div class="absolute inset-0 bg-gradient-to-b from-[#7c3aed] to-[#6d28d9]" />
+          <div class="relative px-4 py-3 sm:py-4 lg:py-2 flex items-center justify-center gap-2 lg:gap-3 border-b-4 border-[#3b1285]/60">
+            <img src="/images/icons/icon-challenge.png" alt="Défis" class="w-6 h-6 lg:w-8 lg:h-8 object-contain" />
+            <span class="font-bold text-white uppercase tracking-widest text-xs sm:text-sm lg:text-base">Défis</span>
+          </div>
+        </button>
       </div>
     </div>
 

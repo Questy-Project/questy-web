@@ -198,7 +198,7 @@ function switchMode(newMode: "login" | "register") {
             <div class="space-y-1.5">
               <label class="font-bold text-sm text-[#d4af37] flex items-center gap-2">
                 <span class="material-symbols-outlined text-[18px]">lock</span>
-                ✦ Sceau de Sécurité
+                ✦ Sceau de sécurité
               </label>
               <input
                 v-model="form.password"
@@ -229,7 +229,7 @@ function switchMode(newMode: "login" | "register") {
 
             <!-- Liens CGU / RGPD -->
             <p class="text-xs text-center text-[#8a7f6e]">
-              En créant un compte, vous acceptez nos
+              En utilisant Questy, vous acceptez nos
               <NuxtLink to="/cgu" target="_blank" class="text-questy-gold underline hover:text-[#e9c349] transition-colors">CGU</NuxtLink>
               et notre
               <NuxtLink to="/rgpd" target="_blank" class="text-questy-gold underline hover:text-[#e9c349] transition-colors">Politique de confidentialité</NuxtLink>.

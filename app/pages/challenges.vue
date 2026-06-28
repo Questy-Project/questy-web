@@ -100,17 +100,14 @@ async function handleAbandon(sessionId?: string | null) {
   >
     <div class="w-full max-w-lg md:max-w-3xl mx-auto px-4 md:px-8 py-6 lg:py-2 flex-1 flex flex-col">
 
-      <header class="mb-4 md:mb-8 lg:mb-2 flex items-start justify-between gap-4">
-        <div>
-          <h1 class="text-3xl sm:text-4xl lg:text-2xl font-bold italic text-questy-gold flex items-end gap-2" style="font-family: 'Newsreader', serif">
-            <img src="/images/icons/icon-challenge.png" alt="" class="w-12 h-12 sm:w-14 sm:h-14 lg:w-9 lg:h-9 object-contain" />
-            Défis du jour
-          </h1>
-          <p class="text-xs md:text-sm text-questy-light/50 mt-1">❤️ par défi · +1 stat · max 15/mois</p>
-        </div>
-        <div class="flex flex-col items-end flex-shrink-0 mt-1 gap-0.5">
-          <span class="text-lg leading-none">❤️ {{ partsStore.stock }}<span class="text-questy-light/40">/12</span></span>
-          <span class="text-xs text-questy-light/50">cœurs disponibles</span>
+      <header class="mb-4 md:mb-8 lg:mb-2">
+        <h1 class="text-3xl sm:text-4xl lg:text-2xl font-bold italic text-questy-gold flex items-end gap-2" style="font-family: 'Newsreader', serif">
+          <img src="/images/icons/icon-challenge.png" alt="" class="w-12 h-12 sm:w-14 sm:h-14 lg:w-9 lg:h-9 object-contain" />
+          Défis du jour
+        </h1>
+        <div class="flex items-center justify-between mt-1">
+          <p class="text-sm text-questy-light/70">❤️ par défi · +1 stat · max 15/mois</p>
+          <span class="text-lg leading-none flex-shrink-0 ml-4">❤️ {{ partsStore.stock }}<span class="text-questy-light/40">/12</span></span>
         </div>
       </header>
 
