@@ -10,6 +10,7 @@ const sessionId = ref<string | null>(null);
 const loading   = ref(false);
 const started   = ref(false);
 const userInput = ref('');
+const error     = ref<string | null>(null);
 const isQuiz    = computed(() => props.item.challenge.type === 'QUIZ_IA');
 
 const lastAssistantMessage = computed(() =>
@@ -50,6 +51,7 @@ onUnmounted(() => { if (msgTimer) clearInterval(msgTimer); });
 
 async function start() {
   loading.value = true;
+  error.value   = null;
   try {
     const res = await useApi<{ sessionId: string; message: string }>('/challenges/ia/start', {
       method: 'POST',
@@ -59,6 +61,8 @@ async function start() {
     emit('session-started', res.sessionId);
     messages.value.push({ role: 'assistant', content: res.message });
     started.value = true;
+  } catch (e: any) {
+    error.value = e?.data?.message ?? 'Le défi n\'a pas pu démarrer. Réessaie plus tard.';
   } finally {
     loading.value = false;
   }
@@ -69,6 +73,7 @@ async function sendAnswer(answer: string) {
   messages.value.push({ role: 'user', content: answer });
   userInput.value = '';
   loading.value = true;
+  error.value   = null;
   try {
     const res = await useApi<{ type: string; message: string; success?: boolean }>('/challenges/ia/message', {
       method: 'POST',
@@ -79,6 +84,9 @@ async function sendAnswer(answer: string) {
       await new Promise(resolve => setTimeout(resolve, 2500));
       emit('result', res.success ?? false);
     }
+  } catch (e: any) {
+    messages.value.pop();
+    error.value = e?.data?.message ?? 'La réponse n\'a pas pu être envoyée. Réessaie.';
   } finally {
     loading.value = false;
   }
@@ -108,6 +116,7 @@ async function sendAnswer(answer: string) {
       <UiRpgButton v-else :color="color" class="w-full" @click="start">
         ⚔️ Commencer le défi
       </UiRpgButton>
+      <p v-if="error" class="text-red-400 text-center text-sm">{{ error }}</p>
     </template>
 
     <!-- Défi en cours -->
@@ -152,6 +161,7 @@ async function sendAnswer(answer: string) {
         </div>
       </template>
 
+      <p v-if="error" class="text-red-400 text-center text-sm">{{ error }}</p>
       <button class="text-sm text-gray-500 hover:text-gray-300 transition-colors" :disabled="loading" @click="emit('abandon', sessionId)">🏳️ Abandonner</button>
     </template>
   </div>
